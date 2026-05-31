@@ -1,0 +1,79 @@
+# --- Build directories ---
+build/
+build-*/
+out/
+cmake-build-*/
+**/cmake-build-*/
+_deps/
+
+# --- CMake generated ---
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+Testing/
+compile_commands.json
+.cmake/
+
+# --- Ninja / Make ---
+build.ninja
+.ninja_deps
+.ninja_log
+rules.ninja
+Makefile
+
+# --- MSVC / Windows binaries ---
+*.exe
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
+*.idb
+*.obj
+*.res
+*.suo
+*.user
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+
+# --- Unix binaries / objects ---
+*.o
+*.a
+*.so
+*.so.*
+*.dylib
+
+# --- Generated proto stubs ---
+*.pb.h
+*.pb.cc
+*.pb.go
+*_protocomm.pb.go
+go/proto/
+
+# --- Go ---
+*.test
+*.out
+vendor/
+
+# --- IDE / editors ---
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Project local ---
+build_log.txt
+build_tmp.bat
+options-pinned.h

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package messaging;
+
+option go_package = "protocomm/proto/messaging";
+
+service Chat {
+  rpc SendMessage (ChatMessage) returns (SendResult) {}
+  rpc GetHistory (HistoryRequest) returns (HistoryResponse) {}
+  rpc Ping (PingRequest) returns (PongResponse) {}
+}
+
+message ChatMessage {
+  string sender = 1;
+  string text = 2;
+  uint64 timestamp = 3;
+}
+
+message SendResult {
+  bool success = 1;
+  string message_id = 2;
+}
+
+message HistoryRequest {
+  uint32 limit = 1;
+}
+
+message HistoryResponse {
+  repeated ChatMessage messages = 1;
+  uint32 total = 2;
+}
+
+message PingRequest {
+  uint64 sent_at = 1;
+}
+
+message PongResponse {
+  uint64 sent_at = 1;
+  uint64 received_at = 2;
+}

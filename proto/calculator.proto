@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package math;
+
+option go_package = "protocomm/proto/math";
+
+service Calculator {
+  rpc Add (CalcRequest) returns (CalcResponse) {}
+  rpc Subtract (CalcRequest) returns (CalcResponse) {}
+  rpc Multiply (CalcRequest) returns (CalcResponse) {}
+  rpc Divide (CalcRequest) returns (CalcResponse) {}
+}
+
+message CalcRequest {
+  double a = 1;
+  double b = 2;
+}
+
+message CalcResponse {
+  double result = 1;
+  string error = 2;
+}

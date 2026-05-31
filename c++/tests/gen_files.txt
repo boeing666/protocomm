@@ -1,0 +1,3 @@
+protoc --cpp_out=./protocomm --protocomm_out=. --plugin=protoc-gen-protocomm=.\protoc-gen-protocomm.exe example.proto
+protoc --cpp_out=./protocomm --protocomm_out=. --plugin=protoc-gen-protocomm=.\protoc-gen-protocomm.exe calculator.proto
+protoc --cpp_out=./protocomm --protocomm_out=. --plugin=protoc-gen-protocomm=.\protoc-gen-protocomm.exe chat.proto
