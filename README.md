@@ -115,10 +115,8 @@ req.set_name("world");
 HelloReply resp;
 auto st = stub.SayHello(req, &resp);
 
-// 2. Async + future (with optional timeout)
-auto [st2, resp2] = stub.AsyncSayHello(req)
-                        .timeout(std::chrono::seconds(5))
-                        .get();
+// 2. Async + future
+auto [st2, resp2] = stub.AsyncSayHello(req).get();
 
 // 3. Async + callback (fire and continue)
 stub.AsyncSayHello(req,

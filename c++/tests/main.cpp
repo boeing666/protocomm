@@ -137,7 +137,7 @@ bool test_greeter_basic(uint16_t port) {
 
     HelloRequest req;
     req.set_name("protocomm");
-    auto result = stub.AsyncSayHello(req).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncSayHello(req).get();
     TEST_ASSERT(result.first.ok(), "greeter basic call");
     TEST_ASSERT(result.second.message() == "Hello protocomm", "greeter response");
     return true;
@@ -163,7 +163,7 @@ bool test_greeter_sequential(uint16_t port) {
     for (int i = 0; i < 5; i++) {
         HelloRequest req;
         req.set_name("seq_" + std::to_string(i));
-        auto result = stub.AsyncSayHello(req).timeout(std::chrono::seconds(5)).get();
+        auto result = stub.AsyncSayHello(req).get();
         TEST_ASSERT(result.first.ok(), "greeter seq call " + std::to_string(i));
     }
     return true;
@@ -175,7 +175,7 @@ bool test_greeter_error(uint16_t port) {
 
     HelloRequest req;
     req.set_name("err");
-    auto result = stub.AsyncSayHello1(req).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncSayHello1(req).get();
     TEST_ASSERT(result.first.error_code() == protocomm::StatusCode::INVALID_ARGUMENT,
                 "greeter error status");
     return true;
@@ -186,7 +186,7 @@ bool test_greeter_unimplemented(uint16_t port) {
     Greeter::Stub stub(ch);
 
     HelloRequest req;
-    auto result = stub.AsyncSayHello2(req).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncSayHello2(req).get();
     TEST_ASSERT(result.first.error_code() == protocomm::StatusCode::UNIMPLEMENTED,
                 "greeter unimplemented");
     return true;
@@ -198,7 +198,7 @@ bool test_greeter_large_payload(uint16_t port) {
 
     HelloRequest req;
     req.set_name(std::string(50000, 'X'));
-    auto result = stub.AsyncSayHello(req).timeout(std::chrono::seconds(10)).get();
+    auto result = stub.AsyncSayHello(req).get();
     TEST_ASSERT(result.first.ok(), "greeter large payload");
     TEST_ASSERT(result.second.message().size() > 50000, "greeter large response size");
     return true;
@@ -211,7 +211,7 @@ bool test_calc_add(uint16_t port) {
     math::CalcRequest req;
     req.set_a(3.14);
     req.set_b(2.86);
-    auto result = stub.AsyncAdd(req).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncAdd(req).get();
     TEST_ASSERT(result.first.ok(), "calc add call");
     TEST_ASSERT(std::abs(result.second.result() - 6.0) < 0.001, "calc add result");
     return true;
@@ -224,7 +224,7 @@ bool test_calc_subtract(uint16_t port) {
     math::CalcRequest req;
     req.set_a(10.0);
     req.set_b(3.5);
-    auto result = stub.AsyncSubtract(req).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncSubtract(req).get();
     TEST_ASSERT(result.first.ok(), "calc subtract call");
     TEST_ASSERT(std::abs(result.second.result() - 6.5) < 0.001, "calc subtract result");
     return true;
@@ -237,7 +237,7 @@ bool test_calc_multiply(uint16_t port) {
     math::CalcRequest req;
     req.set_a(7.0);
     req.set_b(6.0);
-    auto result = stub.AsyncMultiply(req).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncMultiply(req).get();
     TEST_ASSERT(result.first.ok(), "calc multiply call");
     TEST_ASSERT(std::abs(result.second.result() - 42.0) < 0.001, "calc multiply result");
     return true;
@@ -250,7 +250,7 @@ bool test_calc_divide(uint16_t port) {
     math::CalcRequest req;
     req.set_a(22.0);
     req.set_b(7.0);
-    auto result = stub.AsyncDivide(req).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncDivide(req).get();
     TEST_ASSERT(result.first.ok(), "calc divide call");
     TEST_ASSERT(std::abs(result.second.result() - 22.0/7.0) < 0.001, "calc divide result");
     return true;
@@ -263,7 +263,7 @@ bool test_calc_divide_by_zero(uint16_t port) {
     math::CalcRequest req;
     req.set_a(1.0);
     req.set_b(0.0);
-    auto result = stub.AsyncDivide(req).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncDivide(req).get();
     TEST_ASSERT(result.first.error_code() == protocomm::StatusCode::INVALID_ARGUMENT,
                 "calc divide by zero error");
     return true;
@@ -278,7 +278,7 @@ bool test_chat_send_and_history(uint16_t port) {
         msg.set_sender("user" + std::to_string(i));
         msg.set_text("Message #" + std::to_string(i));
         msg.set_timestamp(1000 + i);
-        auto result = stub.AsyncSendMessage(msg).timeout(std::chrono::seconds(5)).get();
+        auto result = stub.AsyncSendMessage(msg).get();
         TEST_ASSERT(result.first.ok(), "chat send msg " + std::to_string(i));
         TEST_ASSERT(result.second.success(), "chat send success " + std::to_string(i));
         TEST_ASSERT(!result.second.message_id().empty(), "chat msg has id " + std::to_string(i));
@@ -286,7 +286,7 @@ bool test_chat_send_and_history(uint16_t port) {
 
     messaging::HistoryRequest hist_req;
     hist_req.set_limit(10);
-    auto hist_result = stub.AsyncGetHistory(hist_req).timeout(std::chrono::seconds(5)).get();
+    auto hist_result = stub.AsyncGetHistory(hist_req).get();
     TEST_ASSERT(hist_result.first.ok(), "chat get history");
     TEST_ASSERT(hist_result.second.total() == 3, "chat history total");
     TEST_ASSERT(hist_result.second.messages_size() == 3, "chat history messages count");
@@ -304,7 +304,7 @@ bool test_chat_ping(uint16_t port) {
         std::chrono::system_clock::now().time_since_epoch()).count();
     ping.set_sent_at(static_cast<uint64_t>(now));
 
-    auto result = stub.AsyncPing(ping).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncPing(ping).get();
     TEST_ASSERT(result.first.ok(), "chat ping");
     TEST_ASSERT(result.second.sent_at() == ping.sent_at(), "chat ping echoes sent_at");
     TEST_ASSERT(result.second.received_at() > 0, "chat ping has received_at");
@@ -321,19 +321,19 @@ bool test_multiple_services_same_server(uint16_t port) {
 
     HelloRequest greq;
     greq.set_name("multi");
-    auto gr = greeter_stub.AsyncSayHello(greq).timeout(std::chrono::seconds(5)).get();
+    auto gr = greeter_stub.AsyncSayHello(greq).get();
     TEST_ASSERT(gr.first.ok(), "multi-svc greeter");
 
     math::CalcRequest creq;
     creq.set_a(2.0);
     creq.set_b(3.0);
-    auto cr = calc_stub.AsyncAdd(creq).timeout(std::chrono::seconds(5)).get();
+    auto cr = calc_stub.AsyncAdd(creq).get();
     TEST_ASSERT(cr.first.ok(), "multi-svc calculator");
     TEST_ASSERT(std::abs(cr.second.result() - 5.0) < 0.001, "multi-svc calc result");
 
     messaging::PingRequest preq;
     preq.set_sent_at(12345);
-    auto pr = chat_stub.AsyncPing(preq).timeout(std::chrono::seconds(5)).get();
+    auto pr = chat_stub.AsyncPing(preq).get();
     TEST_ASSERT(pr.first.ok(), "multi-svc chat ping");
     return true;
 }
@@ -366,7 +366,7 @@ bool test_handshake_mismatch(uint16_t port) {
     Greeter::Stub stub(ch);
 
     HelloRequest req;
-    auto result = stub.AsyncSayHello(req).timeout(std::chrono::seconds(5)).get();
+    auto result = stub.AsyncSayHello(req).get();
     TEST_ASSERT(!result.first.ok(), "handshake mismatch detected");
     return true;
 }
