@@ -141,7 +141,7 @@ const file_calculator_proto_rawDesc = "" +
 	"\x03Add\x12\x11.math.CalcRequest\x1a\x12.math.CalcResponse\"\x00\x123\n" +
 	"\bSubtract\x12\x11.math.CalcRequest\x1a\x12.math.CalcResponse\"\x00\x123\n" +
 	"\bMultiply\x12\x11.math.CalcRequest\x1a\x12.math.CalcResponse\"\x00\x121\n" +
-	"\x06Divide\x12\x11.math.CalcRequest\x1a\x12.math.CalcResponse\"\x00B\x16Z\x14protocomm/proto/mathb\x06proto3"
+	"\x06Divide\x12\x11.math.CalcRequest\x1a\x12.math.CalcResponse\"\x00B.Z,github.com/boeing666/protocomm/go/proto/mathb\x06proto3"
 
 var (
 	file_calculator_proto_rawDescOnce sync.Once

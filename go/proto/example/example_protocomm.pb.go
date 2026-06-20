@@ -4,8 +4,8 @@
 package example
 
 import (
+	_go "github.com/boeing666/protocomm/go"
 	proto "google.golang.org/protobuf/proto"
-	protocomm "protocomm"
 )
 
 // Method IDs for Greeter service.
@@ -23,18 +23,18 @@ const (
 
 // GreeterClient is the client stub for the Greeter service.
 type GreeterClient struct {
-	ch *protocomm.Channel
+	ch *_go.Channel
 }
 
 // NewGreeterClient creates a client stub bound to the given channel.
-func NewGreeterClient(ch *protocomm.Channel) *GreeterClient {
+func NewGreeterClient(ch *_go.Channel) *GreeterClient {
 	return &GreeterClient{ch: ch}
 }
 
-func (c *GreeterClient) SayHello(req *HelloRequest) (*HelloReply, protocomm.Status) {
+func (c *GreeterClient) SayHello(req *HelloRequest) (*HelloReply, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello_MethodID, data)
 	if !st.IsOK() {
@@ -42,15 +42,15 @@ func (c *GreeterClient) SayHello(req *HelloRequest) (*HelloReply, protocomm.Stat
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *GreeterClient) SayHello1(req *HelloRequest) (*HelloReply, protocomm.Status) {
+func (c *GreeterClient) SayHello1(req *HelloRequest) (*HelloReply, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello1_MethodID, data)
 	if !st.IsOK() {
@@ -58,15 +58,15 @@ func (c *GreeterClient) SayHello1(req *HelloRequest) (*HelloReply, protocomm.Sta
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *GreeterClient) SayHello2(req *HelloRequest) (*HelloReply, protocomm.Status) {
+func (c *GreeterClient) SayHello2(req *HelloRequest) (*HelloReply, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello2_MethodID, data)
 	if !st.IsOK() {
@@ -74,15 +74,15 @@ func (c *GreeterClient) SayHello2(req *HelloRequest) (*HelloReply, protocomm.Sta
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *GreeterClient) SayHello3(req *HelloRequest) (*HelloReply, protocomm.Status) {
+func (c *GreeterClient) SayHello3(req *HelloRequest) (*HelloReply, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello3_MethodID, data)
 	if !st.IsOK() {
@@ -90,15 +90,15 @@ func (c *GreeterClient) SayHello3(req *HelloRequest) (*HelloReply, protocomm.Sta
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *GreeterClient) SayHello4(req *HelloRequest) (*HelloReply, protocomm.Status) {
+func (c *GreeterClient) SayHello4(req *HelloRequest) (*HelloReply, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello4_MethodID, data)
 	if !st.IsOK() {
@@ -106,15 +106,15 @@ func (c *GreeterClient) SayHello4(req *HelloRequest) (*HelloReply, protocomm.Sta
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *GreeterClient) SayHello5(req *HelloRequest) (*HelloReply, protocomm.Status) {
+func (c *GreeterClient) SayHello5(req *HelloRequest) (*HelloReply, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello5_MethodID, data)
 	if !st.IsOK() {
@@ -122,15 +122,15 @@ func (c *GreeterClient) SayHello5(req *HelloRequest) (*HelloReply, protocomm.Sta
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *GreeterClient) SayHello6(req *HelloRequest) (*HelloReply, protocomm.Status) {
+func (c *GreeterClient) SayHello6(req *HelloRequest) (*HelloReply, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello6_MethodID, data)
 	if !st.IsOK() {
@@ -138,15 +138,15 @@ func (c *GreeterClient) SayHello6(req *HelloRequest) (*HelloReply, protocomm.Sta
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *GreeterClient) SayHello7(req *HelloRequest) (*HelloReply, protocomm.Status) {
+func (c *GreeterClient) SayHello7(req *HelloRequest) (*HelloReply, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello7_MethodID, data)
 	if !st.IsOK() {
@@ -154,15 +154,15 @@ func (c *GreeterClient) SayHello7(req *HelloRequest) (*HelloReply, protocomm.Sta
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *GreeterClient) SayHello8(req *HelloRequest) (*HelloReply, protocomm.Status) {
+func (c *GreeterClient) SayHello8(req *HelloRequest) (*HelloReply, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello8_MethodID, data)
 	if !st.IsOK() {
@@ -170,69 +170,69 @@ func (c *GreeterClient) SayHello8(req *HelloRequest) (*HelloReply, protocomm.Sta
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
 // GreeterServer is the server-side interface for the Greeter service.
 type GreeterServer interface {
-	SayHello(ctx *protocomm.ServerContext, req *HelloRequest) (*HelloReply, protocomm.Status)
-	SayHello1(ctx *protocomm.ServerContext, req *HelloRequest) (*HelloReply, protocomm.Status)
-	SayHello2(ctx *protocomm.ServerContext, req *HelloRequest) (*HelloReply, protocomm.Status)
-	SayHello3(ctx *protocomm.ServerContext, req *HelloRequest) (*HelloReply, protocomm.Status)
-	SayHello4(ctx *protocomm.ServerContext, req *HelloRequest) (*HelloReply, protocomm.Status)
-	SayHello5(ctx *protocomm.ServerContext, req *HelloRequest) (*HelloReply, protocomm.Status)
-	SayHello6(ctx *protocomm.ServerContext, req *HelloRequest) (*HelloReply, protocomm.Status)
-	SayHello7(ctx *protocomm.ServerContext, req *HelloRequest) (*HelloReply, protocomm.Status)
-	SayHello8(ctx *protocomm.ServerContext, req *HelloRequest) (*HelloReply, protocomm.Status)
+	SayHello(ctx *_go.ServerContext, req *HelloRequest) (*HelloReply, _go.Status)
+	SayHello1(ctx *_go.ServerContext, req *HelloRequest) (*HelloReply, _go.Status)
+	SayHello2(ctx *_go.ServerContext, req *HelloRequest) (*HelloReply, _go.Status)
+	SayHello3(ctx *_go.ServerContext, req *HelloRequest) (*HelloReply, _go.Status)
+	SayHello4(ctx *_go.ServerContext, req *HelloRequest) (*HelloReply, _go.Status)
+	SayHello5(ctx *_go.ServerContext, req *HelloRequest) (*HelloReply, _go.Status)
+	SayHello6(ctx *_go.ServerContext, req *HelloRequest) (*HelloReply, _go.Status)
+	SayHello7(ctx *_go.ServerContext, req *HelloRequest) (*HelloReply, _go.Status)
+	SayHello8(ctx *_go.ServerContext, req *HelloRequest) (*HelloReply, _go.Status)
 }
 
 // UnimplementedGreeterServer returns UNIMPLEMENTED for every method.
 type UnimplementedGreeterServer struct{}
 
-func (UnimplementedGreeterServer) SayHello(_ *protocomm.ServerContext, _ *HelloRequest) (*HelloReply, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SayHello not implemented"}
+func (UnimplementedGreeterServer) SayHello(_ *_go.ServerContext, _ *HelloRequest) (*HelloReply, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SayHello not implemented"}
 }
 
-func (UnimplementedGreeterServer) SayHello1(_ *protocomm.ServerContext, _ *HelloRequest) (*HelloReply, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SayHello1 not implemented"}
+func (UnimplementedGreeterServer) SayHello1(_ *_go.ServerContext, _ *HelloRequest) (*HelloReply, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SayHello1 not implemented"}
 }
 
-func (UnimplementedGreeterServer) SayHello2(_ *protocomm.ServerContext, _ *HelloRequest) (*HelloReply, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SayHello2 not implemented"}
+func (UnimplementedGreeterServer) SayHello2(_ *_go.ServerContext, _ *HelloRequest) (*HelloReply, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SayHello2 not implemented"}
 }
 
-func (UnimplementedGreeterServer) SayHello3(_ *protocomm.ServerContext, _ *HelloRequest) (*HelloReply, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SayHello3 not implemented"}
+func (UnimplementedGreeterServer) SayHello3(_ *_go.ServerContext, _ *HelloRequest) (*HelloReply, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SayHello3 not implemented"}
 }
 
-func (UnimplementedGreeterServer) SayHello4(_ *protocomm.ServerContext, _ *HelloRequest) (*HelloReply, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SayHello4 not implemented"}
+func (UnimplementedGreeterServer) SayHello4(_ *_go.ServerContext, _ *HelloRequest) (*HelloReply, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SayHello4 not implemented"}
 }
 
-func (UnimplementedGreeterServer) SayHello5(_ *protocomm.ServerContext, _ *HelloRequest) (*HelloReply, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SayHello5 not implemented"}
+func (UnimplementedGreeterServer) SayHello5(_ *_go.ServerContext, _ *HelloRequest) (*HelloReply, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SayHello5 not implemented"}
 }
 
-func (UnimplementedGreeterServer) SayHello6(_ *protocomm.ServerContext, _ *HelloRequest) (*HelloReply, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SayHello6 not implemented"}
+func (UnimplementedGreeterServer) SayHello6(_ *_go.ServerContext, _ *HelloRequest) (*HelloReply, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SayHello6 not implemented"}
 }
 
-func (UnimplementedGreeterServer) SayHello7(_ *protocomm.ServerContext, _ *HelloRequest) (*HelloReply, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SayHello7 not implemented"}
+func (UnimplementedGreeterServer) SayHello7(_ *_go.ServerContext, _ *HelloRequest) (*HelloReply, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SayHello7 not implemented"}
 }
 
-func (UnimplementedGreeterServer) SayHello8(_ *protocomm.ServerContext, _ *HelloRequest) (*HelloReply, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SayHello8 not implemented"}
+func (UnimplementedGreeterServer) SayHello8(_ *_go.ServerContext, _ *HelloRequest) (*HelloReply, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SayHello8 not implemented"}
 }
 
 // RegisterGreeterServer registers a GreeterServer with the protocomm server.
-func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
-	srv.RegisterMethod(Greeter_SayHello_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
+	srv.RegisterMethod(Greeter_SayHello_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SayHello(ctx, req)
 		if !st.IsOK() {
@@ -240,14 +240,14 @@ func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Greeter_SayHello1_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Greeter_SayHello1_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SayHello1(ctx, req)
 		if !st.IsOK() {
@@ -255,14 +255,14 @@ func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Greeter_SayHello2_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Greeter_SayHello2_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SayHello2(ctx, req)
 		if !st.IsOK() {
@@ -270,14 +270,14 @@ func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Greeter_SayHello3_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Greeter_SayHello3_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SayHello3(ctx, req)
 		if !st.IsOK() {
@@ -285,14 +285,14 @@ func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Greeter_SayHello4_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Greeter_SayHello4_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SayHello4(ctx, req)
 		if !st.IsOK() {
@@ -300,14 +300,14 @@ func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Greeter_SayHello5_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Greeter_SayHello5_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SayHello5(ctx, req)
 		if !st.IsOK() {
@@ -315,14 +315,14 @@ func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Greeter_SayHello6_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Greeter_SayHello6_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SayHello6(ctx, req)
 		if !st.IsOK() {
@@ -330,14 +330,14 @@ func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Greeter_SayHello7_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Greeter_SayHello7_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SayHello7(ctx, req)
 		if !st.IsOK() {
@@ -345,14 +345,14 @@ func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Greeter_SayHello8_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Greeter_SayHello8_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SayHello8(ctx, req)
 		if !st.IsOK() {
@@ -360,19 +360,19 @@ func RegisterGreeterServer(srv *protocomm.Server, impl GreeterServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
 }
 
 type greeterServiceRegistrar struct{ impl GreeterServer }
 
-func (r *greeterServiceRegistrar) RegisterWith(srv *protocomm.Server) {
+func (r *greeterServiceRegistrar) RegisterWith(srv *_go.Server) {
 	RegisterGreeterServer(srv, r.impl)
 }
 
-// NewGreeterService wraps impl as a protocomm.Service for use with ServerBuilder.
-func NewGreeterService(impl GreeterServer) protocomm.Service {
+// NewGreeterService wraps impl as a _go.Service for use with ServerBuilder.
+func NewGreeterService(impl GreeterServer) _go.Service {
 	return &greeterServiceRegistrar{impl: impl}
 }

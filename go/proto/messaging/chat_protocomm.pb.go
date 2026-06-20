@@ -4,8 +4,8 @@
 package messaging
 
 import (
+	_go "github.com/boeing666/protocomm/go"
 	proto "google.golang.org/protobuf/proto"
-	protocomm "protocomm"
 )
 
 // Method IDs for Chat service.
@@ -17,18 +17,18 @@ const (
 
 // ChatClient is the client stub for the Chat service.
 type ChatClient struct {
-	ch *protocomm.Channel
+	ch *_go.Channel
 }
 
 // NewChatClient creates a client stub bound to the given channel.
-func NewChatClient(ch *protocomm.Channel) *ChatClient {
+func NewChatClient(ch *_go.Channel) *ChatClient {
 	return &ChatClient{ch: ch}
 }
 
-func (c *ChatClient) SendMessage(req *ChatMessage) (*SendResult, protocomm.Status) {
+func (c *ChatClient) SendMessage(req *ChatMessage) (*SendResult, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Chat_SendMessage_MethodID, data)
 	if !st.IsOK() {
@@ -36,15 +36,15 @@ func (c *ChatClient) SendMessage(req *ChatMessage) (*SendResult, protocomm.Statu
 	}
 	resp := new(SendResult)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *ChatClient) GetHistory(req *HistoryRequest) (*HistoryResponse, protocomm.Status) {
+func (c *ChatClient) GetHistory(req *HistoryRequest) (*HistoryResponse, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Chat_GetHistory_MethodID, data)
 	if !st.IsOK() {
@@ -52,15 +52,15 @@ func (c *ChatClient) GetHistory(req *HistoryRequest) (*HistoryResponse, protocom
 	}
 	resp := new(HistoryResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *ChatClient) Ping(req *PingRequest) (*PongResponse, protocomm.Status) {
+func (c *ChatClient) Ping(req *PingRequest) (*PongResponse, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Chat_Ping_MethodID, data)
 	if !st.IsOK() {
@@ -68,39 +68,39 @@ func (c *ChatClient) Ping(req *PingRequest) (*PongResponse, protocomm.Status) {
 	}
 	resp := new(PongResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
 // ChatServer is the server-side interface for the Chat service.
 type ChatServer interface {
-	SendMessage(ctx *protocomm.ServerContext, req *ChatMessage) (*SendResult, protocomm.Status)
-	GetHistory(ctx *protocomm.ServerContext, req *HistoryRequest) (*HistoryResponse, protocomm.Status)
-	Ping(ctx *protocomm.ServerContext, req *PingRequest) (*PongResponse, protocomm.Status)
+	SendMessage(ctx *_go.ServerContext, req *ChatMessage) (*SendResult, _go.Status)
+	GetHistory(ctx *_go.ServerContext, req *HistoryRequest) (*HistoryResponse, _go.Status)
+	Ping(ctx *_go.ServerContext, req *PingRequest) (*PongResponse, _go.Status)
 }
 
 // UnimplementedChatServer returns UNIMPLEMENTED for every method.
 type UnimplementedChatServer struct{}
 
-func (UnimplementedChatServer) SendMessage(_ *protocomm.ServerContext, _ *ChatMessage) (*SendResult, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "SendMessage not implemented"}
+func (UnimplementedChatServer) SendMessage(_ *_go.ServerContext, _ *ChatMessage) (*SendResult, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "SendMessage not implemented"}
 }
 
-func (UnimplementedChatServer) GetHistory(_ *protocomm.ServerContext, _ *HistoryRequest) (*HistoryResponse, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "GetHistory not implemented"}
+func (UnimplementedChatServer) GetHistory(_ *_go.ServerContext, _ *HistoryRequest) (*HistoryResponse, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "GetHistory not implemented"}
 }
 
-func (UnimplementedChatServer) Ping(_ *protocomm.ServerContext, _ *PingRequest) (*PongResponse, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "Ping not implemented"}
+func (UnimplementedChatServer) Ping(_ *_go.ServerContext, _ *PingRequest) (*PongResponse, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "Ping not implemented"}
 }
 
 // RegisterChatServer registers a ChatServer with the protocomm server.
-func RegisterChatServer(srv *protocomm.Server, impl ChatServer) {
-	srv.RegisterMethod(Chat_SendMessage_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+func RegisterChatServer(srv *_go.Server, impl ChatServer) {
+	srv.RegisterMethod(Chat_SendMessage_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(ChatMessage)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.SendMessage(ctx, req)
 		if !st.IsOK() {
@@ -108,14 +108,14 @@ func RegisterChatServer(srv *protocomm.Server, impl ChatServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Chat_GetHistory_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Chat_GetHistory_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(HistoryRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.GetHistory(ctx, req)
 		if !st.IsOK() {
@@ -123,14 +123,14 @@ func RegisterChatServer(srv *protocomm.Server, impl ChatServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Chat_Ping_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Chat_Ping_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(PingRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.Ping(ctx, req)
 		if !st.IsOK() {
@@ -138,19 +138,19 @@ func RegisterChatServer(srv *protocomm.Server, impl ChatServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
 }
 
 type chatServiceRegistrar struct{ impl ChatServer }
 
-func (r *chatServiceRegistrar) RegisterWith(srv *protocomm.Server) {
+func (r *chatServiceRegistrar) RegisterWith(srv *_go.Server) {
 	RegisterChatServer(srv, r.impl)
 }
 
-// NewChatService wraps impl as a protocomm.Service for use with ServerBuilder.
-func NewChatService(impl ChatServer) protocomm.Service {
+// NewChatService wraps impl as a _go.Service for use with ServerBuilder.
+func NewChatService(impl ChatServer) _go.Service {
 	return &chatServiceRegistrar{impl: impl}
 }

@@ -42,7 +42,8 @@ target_include_directories(myapp PRIVATE
 ### Go
 
 ```
-go install ./protoc-gen-protocomm-go
+go get github.com/boeing666/protocomm/go
+go install github.com/boeing666/protocomm/go/protoc-gen-protocomm-go@latest
 protoc --go_out=. --go_opt=paths=source_relative \
        --protocomm-go_out=. --protocomm-go_opt=paths=source_relative \
        greeter.proto
@@ -133,7 +134,7 @@ Multiple in-flight calls on the same channel are multiplexed; no per-call thread
 
 ```
 import (
-    pc "protocomm"
+    pc "github.com/boeing666/protocomm/go"
     pb "yourmod/proto"
 )
 

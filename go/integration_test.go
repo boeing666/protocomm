@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"protocomm"
-	"protocomm/internal/testpb"
+	"github.com/boeing666/protocomm/go"
+	"github.com/boeing666/protocomm/go/internal/testpb"
 )
 
 // ---------- global test server ----------

@@ -355,7 +355,7 @@ const file_chat_proto_rawDesc = "" +
 	"\vSendMessage\x12\x16.messaging.ChatMessage\x1a\x15.messaging.SendResult\"\x00\x12E\n" +
 	"\n" +
 	"GetHistory\x12\x19.messaging.HistoryRequest\x1a\x1a.messaging.HistoryResponse\"\x00\x129\n" +
-	"\x04Ping\x12\x16.messaging.PingRequest\x1a\x17.messaging.PongResponse\"\x00B\x1bZ\x19protocomm/proto/messagingb\x06proto3"
+	"\x04Ping\x12\x16.messaging.PingRequest\x1a\x17.messaging.PongResponse\"\x00B3Z1github.com/boeing666/protocomm/go/proto/messagingb\x06proto3"
 
 var (
 	file_chat_proto_rawDescOnce sync.Once

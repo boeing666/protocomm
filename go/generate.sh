@@ -38,9 +38,9 @@ for proto in "${PROTOS[@]}"; do
     echo "==> Generating $proto"
     protoc \
         --proto_path="$PROTO_DIR" \
-        --go_out=. --go_opt=module=protocomm \
+        --go_out=. --go_opt=module=github.com/boeing666/protocomm/go \
         --plugin=protoc-gen-protocomm-go="$PLUGIN" \
-        --protocomm-go_out=. --protocomm-go_opt=module=protocomm \
+        --protocomm-go_out=. --protocomm-go_opt=module=github.com/boeing666/protocomm/go \
         "$proto"
 done
 

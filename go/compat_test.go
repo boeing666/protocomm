@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"testing"
 
-	"protocomm"
-	"protocomm/internal/testpb"
+	"github.com/boeing666/protocomm/go"
+	"github.com/boeing666/protocomm/go/internal/testpb"
 )
 
 // =========================================================

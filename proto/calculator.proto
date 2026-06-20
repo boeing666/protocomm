@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package math;
 
-option go_package = "protocomm/proto/math";
+option go_package = "github.com/boeing666/protocomm/go/proto/math";
 
 service Calculator {
   rpc Add (CalcRequest) returns (CalcResponse) {}

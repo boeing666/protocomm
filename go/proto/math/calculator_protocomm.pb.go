@@ -4,8 +4,8 @@
 package math
 
 import (
+	_go "github.com/boeing666/protocomm/go"
 	proto "google.golang.org/protobuf/proto"
-	protocomm "protocomm"
 )
 
 // Method IDs for Calculator service.
@@ -18,18 +18,18 @@ const (
 
 // CalculatorClient is the client stub for the Calculator service.
 type CalculatorClient struct {
-	ch *protocomm.Channel
+	ch *_go.Channel
 }
 
 // NewCalculatorClient creates a client stub bound to the given channel.
-func NewCalculatorClient(ch *protocomm.Channel) *CalculatorClient {
+func NewCalculatorClient(ch *_go.Channel) *CalculatorClient {
 	return &CalculatorClient{ch: ch}
 }
 
-func (c *CalculatorClient) Add(req *CalcRequest) (*CalcResponse, protocomm.Status) {
+func (c *CalculatorClient) Add(req *CalcRequest) (*CalcResponse, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Calculator_Add_MethodID, data)
 	if !st.IsOK() {
@@ -37,15 +37,15 @@ func (c *CalculatorClient) Add(req *CalcRequest) (*CalcResponse, protocomm.Statu
 	}
 	resp := new(CalcResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *CalculatorClient) Subtract(req *CalcRequest) (*CalcResponse, protocomm.Status) {
+func (c *CalculatorClient) Subtract(req *CalcRequest) (*CalcResponse, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Calculator_Subtract_MethodID, data)
 	if !st.IsOK() {
@@ -53,15 +53,15 @@ func (c *CalculatorClient) Subtract(req *CalcRequest) (*CalcResponse, protocomm.
 	}
 	resp := new(CalcResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *CalculatorClient) Multiply(req *CalcRequest) (*CalcResponse, protocomm.Status) {
+func (c *CalculatorClient) Multiply(req *CalcRequest) (*CalcResponse, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Calculator_Multiply_MethodID, data)
 	if !st.IsOK() {
@@ -69,15 +69,15 @@ func (c *CalculatorClient) Multiply(req *CalcRequest) (*CalcResponse, protocomm.
 	}
 	resp := new(CalcResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
-func (c *CalculatorClient) Divide(req *CalcRequest) (*CalcResponse, protocomm.Status) {
+func (c *CalculatorClient) Divide(req *CalcRequest) (*CalcResponse, _go.Status) {
 	data, err := proto.Marshal(req)
 	if err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 	}
 	respData, st := c.ch.UnaryCall(Calculator_Divide_MethodID, data)
 	if !st.IsOK() {
@@ -85,44 +85,44 @@ func (c *CalculatorClient) Divide(req *CalcRequest) (*CalcResponse, protocomm.St
 	}
 	resp := new(CalcResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
-		return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 	}
-	return resp, protocomm.StatusOK()
+	return resp, _go.StatusOK()
 }
 
 // CalculatorServer is the server-side interface for the Calculator service.
 type CalculatorServer interface {
-	Add(ctx *protocomm.ServerContext, req *CalcRequest) (*CalcResponse, protocomm.Status)
-	Subtract(ctx *protocomm.ServerContext, req *CalcRequest) (*CalcResponse, protocomm.Status)
-	Multiply(ctx *protocomm.ServerContext, req *CalcRequest) (*CalcResponse, protocomm.Status)
-	Divide(ctx *protocomm.ServerContext, req *CalcRequest) (*CalcResponse, protocomm.Status)
+	Add(ctx *_go.ServerContext, req *CalcRequest) (*CalcResponse, _go.Status)
+	Subtract(ctx *_go.ServerContext, req *CalcRequest) (*CalcResponse, _go.Status)
+	Multiply(ctx *_go.ServerContext, req *CalcRequest) (*CalcResponse, _go.Status)
+	Divide(ctx *_go.ServerContext, req *CalcRequest) (*CalcResponse, _go.Status)
 }
 
 // UnimplementedCalculatorServer returns UNIMPLEMENTED for every method.
 type UnimplementedCalculatorServer struct{}
 
-func (UnimplementedCalculatorServer) Add(_ *protocomm.ServerContext, _ *CalcRequest) (*CalcResponse, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "Add not implemented"}
+func (UnimplementedCalculatorServer) Add(_ *_go.ServerContext, _ *CalcRequest) (*CalcResponse, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "Add not implemented"}
 }
 
-func (UnimplementedCalculatorServer) Subtract(_ *protocomm.ServerContext, _ *CalcRequest) (*CalcResponse, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "Subtract not implemented"}
+func (UnimplementedCalculatorServer) Subtract(_ *_go.ServerContext, _ *CalcRequest) (*CalcResponse, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "Subtract not implemented"}
 }
 
-func (UnimplementedCalculatorServer) Multiply(_ *protocomm.ServerContext, _ *CalcRequest) (*CalcResponse, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "Multiply not implemented"}
+func (UnimplementedCalculatorServer) Multiply(_ *_go.ServerContext, _ *CalcRequest) (*CalcResponse, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "Multiply not implemented"}
 }
 
-func (UnimplementedCalculatorServer) Divide(_ *protocomm.ServerContext, _ *CalcRequest) (*CalcResponse, protocomm.Status) {
-	return nil, protocomm.Status{Code: protocomm.Unimplemented, Message: "Divide not implemented"}
+func (UnimplementedCalculatorServer) Divide(_ *_go.ServerContext, _ *CalcRequest) (*CalcResponse, _go.Status) {
+	return nil, _go.Status{Code: _go.Unimplemented, Message: "Divide not implemented"}
 }
 
 // RegisterCalculatorServer registers a CalculatorServer with the protocomm server.
-func RegisterCalculatorServer(srv *protocomm.Server, impl CalculatorServer) {
-	srv.RegisterMethod(Calculator_Add_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+func RegisterCalculatorServer(srv *_go.Server, impl CalculatorServer) {
+	srv.RegisterMethod(Calculator_Add_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(CalcRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.Add(ctx, req)
 		if !st.IsOK() {
@@ -130,14 +130,14 @@ func RegisterCalculatorServer(srv *protocomm.Server, impl CalculatorServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Calculator_Subtract_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Calculator_Subtract_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(CalcRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.Subtract(ctx, req)
 		if !st.IsOK() {
@@ -145,14 +145,14 @@ func RegisterCalculatorServer(srv *protocomm.Server, impl CalculatorServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Calculator_Multiply_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Calculator_Multiply_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(CalcRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.Multiply(ctx, req)
 		if !st.IsOK() {
@@ -160,14 +160,14 @@ func RegisterCalculatorServer(srv *protocomm.Server, impl CalculatorServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
-	srv.RegisterMethod(Calculator_Divide_MethodID, func(ctx *protocomm.ServerContext, data []byte) ([]byte, protocomm.Status) {
+	srv.RegisterMethod(Calculator_Divide_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
 		req := new(CalcRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "unmarshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
 		resp, st := impl.Divide(ctx, req)
 		if !st.IsOK() {
@@ -175,19 +175,19 @@ func RegisterCalculatorServer(srv *protocomm.Server, impl CalculatorServer) {
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
-			return nil, protocomm.Status{Code: protocomm.Internal, Message: "marshal: " + err.Error()}
+			return nil, _go.Status{Code: _go.Internal, Message: "marshal: " + err.Error()}
 		}
-		return out, protocomm.StatusOK()
+		return out, _go.StatusOK()
 	})
 }
 
 type calculatorServiceRegistrar struct{ impl CalculatorServer }
 
-func (r *calculatorServiceRegistrar) RegisterWith(srv *protocomm.Server) {
+func (r *calculatorServiceRegistrar) RegisterWith(srv *_go.Server) {
 	RegisterCalculatorServer(srv, r.impl)
 }
 
-// NewCalculatorService wraps impl as a protocomm.Service for use with ServerBuilder.
-func NewCalculatorService(impl CalculatorServer) protocomm.Service {
+// NewCalculatorService wraps impl as a _go.Service for use with ServerBuilder.
+func NewCalculatorService(impl CalculatorServer) _go.Service {
 	return &calculatorServiceRegistrar{impl: impl}
 }

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "protocomm/proto/example";
+option go_package = "github.com/boeing666/protocomm/go/proto/example";
 
 // The greeter service definition.
 service Greeter {

@@ -1,4 +1,4 @@
-module protoc-gen-protocomm-go
+module github.com/boeing666/protocomm/go/protoc-gen-protocomm-go
 
 go 1.25.5
 

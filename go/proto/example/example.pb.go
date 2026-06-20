@@ -128,7 +128,7 @@ const file_example_proto_rawDesc = "" +
 	"\tSayHello5\x12\r.HelloRequest\x1a\v.HelloReply\"\x00\x12)\n" +
 	"\tSayHello6\x12\r.HelloRequest\x1a\v.HelloReply\"\x00\x12)\n" +
 	"\tSayHello7\x12\r.HelloRequest\x1a\v.HelloReply\"\x00\x12)\n" +
-	"\tSayHello8\x12\r.HelloRequest\x1a\v.HelloReply\"\x00B\x19Z\x17protocomm/proto/exampleb\x06proto3"
+	"\tSayHello8\x12\r.HelloRequest\x1a\v.HelloReply\"\x00B1Z/github.com/boeing666/protocomm/go/proto/exampleb\x06proto3"
 
 var (
 	file_example_proto_rawDescOnce sync.Once

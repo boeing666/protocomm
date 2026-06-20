@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"protocomm"
+	"github.com/boeing666/protocomm/go"
 )
 
 func TestFrameSerializeDeserialize(t *testing.T) {

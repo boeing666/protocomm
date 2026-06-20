@@ -46,7 +46,7 @@ func checkHashCollisions(plugin *protogen.Plugin) error {
 }
 
 func pcIdent(name string) protogen.GoIdent {
-	return protogen.GoIdent{GoName: name, GoImportPath: "protocomm"}
+	return protogen.GoIdent{GoName: name, GoImportPath: "github.com/boeing666/protocomm/go"}
 }
 
 func protoIdent(name string) protogen.GoIdent {

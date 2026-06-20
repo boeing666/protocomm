@@ -87,17 +87,18 @@ if(PROTOCOMM_BUILD_GO)
 
         set(STAMP "${CMAKE_CURRENT_BINARY_DIR}/go_gen_stamps/${PROTO_NAME}.stamp")
 
-        # --go_opt=module=protocomm strips "protocomm/" prefix from go_package,
-        # placing generated files into go/proto/example/, go/proto/math/, etc.
+        # --go_opt=module=github.com/boeing666/protocomm/go strips that prefix
+        # from go_package, placing generated files into go/proto/example/,
+        # go/proto/math/, etc.
         add_custom_command(
             OUTPUT "${STAMP}"
             COMMAND ${PROTOC_FOR_GO}
                 --proto_path=${PROTOCOMM_PROTO_DIR}
                 --go_out=${GO_DIR}
-                --go_opt=module=protocomm
+                --go_opt=module=github.com/boeing666/protocomm/go
                 --plugin=protoc-gen-protocomm-go=${GO_PLUGIN_BIN}
                 --protocomm-go_out=${GO_DIR}
-                --protocomm-go_opt=module=protocomm
+                --protocomm-go_opt=module=github.com/boeing666/protocomm/go
                 ${PROTO_FILE}
             COMMAND ${CMAKE_COMMAND} -E touch "${STAMP}"
             DEPENDS ${PROTO_FILE} "${GO_PLUGIN_BIN}"

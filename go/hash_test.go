@@ -3,7 +3,7 @@ package protocomm_test
 import (
 	"testing"
 
-	"protocomm"
+	"github.com/boeing666/protocomm/go"
 )
 
 func TestFnv1a32KnownValues(t *testing.T) {

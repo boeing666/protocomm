@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package messaging;
 
-option go_package = "protocomm/proto/messaging";
+option go_package = "github.com/boeing666/protocomm/go/proto/messaging";
 
 service Chat {
   rpc SendMessage (ChatMessage) returns (SendResult) {}
