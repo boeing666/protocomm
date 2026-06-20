@@ -46,6 +46,7 @@ type Server struct {
 	onDisconnect func(*Peer)
 	onHandshake  func(*Peer, string) bool
 
+	sem  chan struct{}
 	done chan struct{}
 	wg   sync.WaitGroup
 }
@@ -122,7 +123,9 @@ func (s *Server) acceptLoop() {
 }
 
 func (s *Server) handleConn(peer *Peer) {
+	var inflight sync.WaitGroup
 	defer func() {
+		inflight.Wait()
 		if s.onDisconnect != nil {
 			s.onDisconnect(peer)
 		}
@@ -163,44 +166,62 @@ func (s *Server) handleConn(peer *Peer) {
 			return
 		}
 
-		ctx := &ServerContext{
-			PeerAddress: peer.addr,
-			MethodID:    hdr.MethodID,
-			CallID:      hdr.CallID,
-		}
-
-		var respPayload []byte
-		var respCode StatusCode
-
-		s.handlersMu.RLock()
-		handler, ok := s.handlers[hdr.MethodID]
-		s.handlersMu.RUnlock()
-
-		if !ok {
-			respCode = Unimplemented
-		} else {
-			var st Status
-			respPayload, st = handler(ctx, payload)
-			if !st.IsOK() {
-				respCode = st.Code
-				respPayload = nil
+		if s.sem != nil {
+			select {
+			case s.sem <- struct{}{}:
+			case <-s.done:
+				return
 			}
 		}
+		inflight.Add(1)
+		go func(hdr FrameHeader, payload []byte) {
+			defer inflight.Done()
+			if s.sem != nil {
+				defer func() { <-s.sem }()
+			}
+			s.serveRequest(peer, hdr, payload)
+		}(hdr, payload)
+	}
+}
 
-		respHdr := FrameHeader{
-			Type:        FrameResponse,
-			StatusCode:  uint16(respCode),
-			CallID:      hdr.CallID,
-			MethodID:    hdr.MethodID,
-			PayloadSize: uint32(len(respPayload)),
-		}
+func (s *Server) serveRequest(peer *Peer, hdr FrameHeader, payload []byte) {
+	ctx := &ServerContext{
+		PeerAddress: peer.addr,
+		MethodID:    hdr.MethodID,
+		CallID:      hdr.CallID,
+	}
 
-		peer.writeMu.Lock()
-		err = WriteFrame(peer.conn, respHdr, respPayload)
-		peer.writeMu.Unlock()
-		if err != nil {
-			return
+	var respPayload []byte
+	var respCode StatusCode
+
+	s.handlersMu.RLock()
+	handler, ok := s.handlers[hdr.MethodID]
+	s.handlersMu.RUnlock()
+
+	if !ok {
+		respCode = Unimplemented
+	} else {
+		var st Status
+		respPayload, st = handler(ctx, payload)
+		if !st.IsOK() {
+			respCode = st.Code
+			respPayload = nil
 		}
+	}
+
+	respHdr := FrameHeader{
+		Type:        FrameResponse,
+		StatusCode:  uint16(respCode),
+		CallID:      hdr.CallID,
+		MethodID:    hdr.MethodID,
+		PayloadSize: uint32(len(respPayload)),
+	}
+
+	peer.writeMu.Lock()
+	err := WriteFrame(peer.conn, respHdr, respPayload)
+	peer.writeMu.Unlock()
+	if err != nil {
+		peer.conn.Close()
 	}
 }
 
@@ -212,12 +233,14 @@ type ServerBuilder struct {
 	onConnect       func(*Peer)
 	onDisconnect    func(*Peer)
 	onHandshake     func(*Peer, string) bool
+	maxConcurrent   int
 }
 
 func NewServerBuilder() *ServerBuilder {
 	return &ServerBuilder{
 		address:         "0.0.0.0",
 		handshakeHeader: "pc1",
+		maxConcurrent:   256,
 	}
 }
 
@@ -252,6 +275,11 @@ func (b *ServerBuilder) SetOnHandshake(cb func(*Peer, string) bool) *ServerBuild
 	return b
 }
 
+func (b *ServerBuilder) SetMaxConcurrentRequests(n int) *ServerBuilder {
+	b.maxConcurrent = n
+	return b
+}
+
 func (b *ServerBuilder) BuildAndStart() (*Server, error) {
 	s := &Server{
 		handlers:        make(map[uint32]MethodHandler),
@@ -263,6 +291,9 @@ func (b *ServerBuilder) BuildAndStart() (*Server, error) {
 		done:            make(chan struct{}),
 	}
 	s.nextConnID.Store(1)
+	if b.maxConcurrent > 0 {
+		s.sem = make(chan struct{}, b.maxConcurrent)
+	}
 
 	for _, svc := range b.services {
 		svc.RegisterWith(s)
