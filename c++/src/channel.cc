@@ -34,12 +34,9 @@ struct Channel::Impl {
     std::thread io_thread;
 
     std::mutex connect_mu;
-    bool connected = false;
-    bool stopped = false;
-
-    std::atomic<uint32_t> next_call_id{1};
-
-    std::mutex pending_mu;
+    std::atomic<bool> connected{false};
+    std::atomic<bool> stopped{false};
+    uint32_t next_call_id = 1;
     std::unordered_map<uint32_t, ResponseCallback> pending;
 
     std::deque<std::pair<FrameHeader, std::string>> write_queue;
@@ -53,7 +50,6 @@ struct Channel::Impl {
     Status EnsureConnected();
     void StartIoThread();
     void StartReader();
-    void EnqueueWrite(FrameHeader hdr, std::string payload);
     boost::asio::awaitable<void> WritePump();
     boost::asio::awaitable<void> ReadLoop();
     void FailAllPending(Status st);
@@ -61,9 +57,12 @@ struct Channel::Impl {
 };
 
 Status Channel::Impl::EnsureConnected() {
+    if (connected.load(std::memory_order_acquire)) return {};
+
     std::lock_guard lock(connect_mu);
-    if (connected) return {};
-    if (stopped) return {StatusCode::UNAVAILABLE, "channel stopped"};
+    if (connected.load(std::memory_order_relaxed)) return {};
+    if (stopped.load(std::memory_order_acquire))
+        return {StatusCode::UNAVAILABLE, "channel stopped"};
 
     boost::asio::ip::tcp::resolver resolver(io_context);
     boost::system::error_code ec;
@@ -90,9 +89,9 @@ Status Channel::Impl::EnsureConnected() {
         }
     }
 
-    connected = true;
     StartIoThread();
     StartReader();
+    connected.store(true, std::memory_order_release);
     return {};
 }
 
@@ -132,13 +131,10 @@ boost::asio::awaitable<void> Channel::Impl::ReadLoop() {
         }
 
         ResponseCallback cb;
-        {
-            std::lock_guard lock(pending_mu);
-            auto it = pending.find(hdr.call_id);
-            if (it != pending.end()) {
-                cb = std::move(it->second);
-                pending.erase(it);
-            }
+        auto it = pending.find(hdr.call_id);
+        if (it != pending.end()) {
+            cb = std::move(it->second);
+            pending.erase(it);
         }
         if (!cb) {
             continue;
@@ -151,18 +147,6 @@ boost::asio::awaitable<void> Channel::Impl::ReadLoop() {
             cb(Status{}, std::move(payload));
         }
     }
-}
-
-void Channel::Impl::EnqueueWrite(FrameHeader hdr, std::string payload) {
-    boost::asio::post(strand,
-        [this, hdr, payload = std::move(payload)]() mutable {
-            write_queue.emplace_back(hdr, std::move(payload));
-            if (!write_pump_active) {
-                write_pump_active = true;
-                boost::asio::co_spawn(strand, WritePump(),
-                                      boost::asio::detached);
-            }
-        });
 }
 
 boost::asio::awaitable<void> Channel::Impl::WritePump() {
@@ -181,31 +165,27 @@ boost::asio::awaitable<void> Channel::Impl::WritePump() {
 }
 
 void Channel::Impl::FailAllPending(Status st) {
-    std::unordered_map<uint32_t, ResponseCallback> snapshot;
-    {
-        std::lock_guard lock(pending_mu);
-        snapshot.swap(pending);
-    }
+    auto snapshot = std::move(pending);
+    pending.clear();
     for (auto& [call_id, cb] : snapshot) {
         if (cb) cb(st, {});
     }
 }
 
 void Channel::Impl::Shutdown() {
-    {
-        std::lock_guard lock(connect_mu);
-        if (stopped) return;
-        stopped = true;
+    if (stopped.exchange(true)) return;
+
+    if (io_thread.joinable()) {
+        boost::asio::post(strand, [this]() {
+            boost::system::error_code ec;
+            socket.close(ec);
+            FailAllPending({StatusCode::CANCELLED, "channel shutdown"});
+        });
+        work_guard.reset();
+        io_thread.join();
+    } else {
+        FailAllPending({StatusCode::CANCELLED, "channel shutdown"});
     }
-
-    boost::system::error_code ec;
-    socket.close(ec);
-
-    work_guard.reset();
-    io_context.stop();
-    if (io_thread.joinable()) io_thread.join();
-
-    FailAllPending({StatusCode::CANCELLED, "channel shutdown"});
 }
 
 Channel::Channel(std::string host, uint16_t port, ChannelConfig config)
@@ -227,20 +207,31 @@ void Channel::AsyncUnaryCall(uint32_t method_id, std::string request,
         return;
     }
 
-    uint32_t call_id = impl_->next_call_id.fetch_add(1);
+    boost::asio::post(impl_->strand,
+        [impl = impl_.get(), method_id, request = std::move(request),
+         callback = std::move(callback)]() mutable {
+            if (impl->stopped.load(std::memory_order_acquire)) {
+                if (callback)
+                    callback({StatusCode::CANCELLED, "channel shutdown"}, {});
+                return;
+            }
 
-    {
-        std::lock_guard lock(impl_->pending_mu);
-        impl_->pending[call_id] = std::move(callback);
-    }
+            uint32_t call_id = impl->next_call_id++;
+            impl->pending.emplace(call_id, std::move(callback));
 
-    FrameHeader hdr;
-    hdr.type = FrameType::kRequest;
-    hdr.call_id = call_id;
-    hdr.method_id = method_id;
-    hdr.payload_size = static_cast<uint32_t>(request.size());
+            FrameHeader hdr;
+            hdr.type = FrameType::kRequest;
+            hdr.call_id = call_id;
+            hdr.method_id = method_id;
+            hdr.payload_size = static_cast<uint32_t>(request.size());
 
-    impl_->EnqueueWrite(hdr, std::move(request));
+            impl->write_queue.emplace_back(hdr, std::move(request));
+            if (!impl->write_pump_active) {
+                impl->write_pump_active = true;
+                boost::asio::co_spawn(impl->strand, impl->WritePump(),
+                                      boost::asio::detached);
+            }
+        });
 }
 
 std::future<std::pair<Status, std::string>>
