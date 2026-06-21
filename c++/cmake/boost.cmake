@@ -48,3 +48,10 @@ if(NOT PROTOCOMM_HAVE_SYSTEM_BOOST_BEAST)
 
     set(PROTOCOMM_BOOST_FETCH_INCLUDES "${_incs}" CACHE INTERNAL "")
 endif()
+
+if(PROTOCOMM_HAVE_SYSTEM_BOOST_BEAST AND NOT TARGET Boost::asio)
+    add_library(Boost::asio INTERFACE IMPORTED)
+    if(TARGET Boost::headers)
+        target_link_libraries(Boost::asio INTERFACE Boost::headers)
+    endif()
+endif()

@@ -17,7 +17,9 @@ if(NOT DEFINED PROTOCOMM_PROTO_DIR)
     endif()
 endif()
 
-add_subdirectory(cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/boost.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.cmake)
+
 add_subdirectory(src)
 add_subdirectory(protoc)
 

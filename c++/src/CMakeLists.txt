@@ -14,7 +14,9 @@ if(DEFINED PROTOCOMM_BOOST_FETCH_INCLUDES)
     target_include_directories(protocomm PRIVATE ${PROTOCOMM_BOOST_FETCH_INCLUDES})
 endif()
 
-target_compile_definitions(protocomm PUBLIC _WIN32_WINNT=0x0A00)
+if(WIN32)
+    target_compile_definitions(protocomm PUBLIC _WIN32_WINNT=0x0A00)
+endif()
 
 target_link_libraries(protocomm PUBLIC Boost::system Boost::asio)
 target_link_libraries(protocomm PUBLIC protobuf::libprotobuf)
