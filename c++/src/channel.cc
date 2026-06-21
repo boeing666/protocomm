@@ -9,6 +9,7 @@
 #include <thread>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/connect.hpp>
@@ -34,6 +35,7 @@ struct Channel::Impl {
     std::thread io_thread;
 
     std::mutex connect_mu;
+    bool io_thread_started = false;
     std::atomic<bool> connected{false};
     std::atomic<bool> stopped{false};
     uint32_t next_call_id = 1;
@@ -42,13 +44,20 @@ struct Channel::Impl {
     std::deque<std::pair<FrameHeader, std::string>> write_queue;
     bool write_pump_active = false;
 
+    enum class ConnState { Idle, Connecting, Connected, Closed };
+    ConnState conn_state = ConnState::Idle;
+    std::vector<ConnectCallback> connect_waiters;
+
     Impl()
         : work_guard(boost::asio::make_work_guard(io_context)),
           socket(io_context),
           strand(boost::asio::make_strand(io_context.get_executor())) {}
 
     Status EnsureConnected();
-    void StartIoThread();
+    void EnsureIoThread();
+    void RequestConnect(ConnectCallback cb);
+    boost::asio::awaitable<void> ConnectCoro();
+    void finish(Status st);
     void StartReader();
     boost::asio::awaitable<void> WritePump();
     boost::asio::awaitable<void> ReadLoop();
@@ -59,49 +68,124 @@ struct Channel::Impl {
 Status Channel::Impl::EnsureConnected() {
     if (connected.load(std::memory_order_acquire)) return {};
 
-    std::lock_guard lock(connect_mu);
-    if (connected.load(std::memory_order_relaxed)) return {};
+    if (strand.running_in_this_thread()) {
+        return {StatusCode::FAILED_PRECONDITION,
+                "synchronous connect attempted from io thread; "
+                "channel not yet connected"};
+    }
+
     if (stopped.load(std::memory_order_acquire))
         return {StatusCode::UNAVAILABLE, "channel stopped"};
 
-    boost::asio::ip::tcp::resolver resolver(io_context);
-    boost::system::error_code ec;
-    auto endpoints = resolver.resolve(host, std::to_string(port), ec);
-    if (ec) return {StatusCode::UNAVAILABLE, "resolve: " + ec.message()};
+    auto p = std::make_shared<std::promise<Status>>();
+    auto f = p->get_future();
+    RequestConnect([p](Status s) { p->set_value(s); });
 
-    boost::asio::connect(socket, endpoints, ec);
-    if (ec) return {StatusCode::UNAVAILABLE, "connect: " + ec.message()};
-
-    socket.set_option(boost::asio::ip::tcp::no_delay(true), ec);
-
-    if (!config.handshake_header.empty()) {
-        Status hs = SyncTransport::WriteHandshake(socket, config.handshake_header);
-        if (!hs.ok()) {
-            boost::system::error_code ec_close;
-            socket.close(ec_close);
-            return hs;
-        }
-        hs = SyncTransport::ReadAndVerifyHandshake(socket, config.handshake_header);
-        if (!hs.ok()) {
-            boost::system::error_code ec_close;
-            socket.close(ec_close);
-            return hs;
-        }
+    try {
+        return f.get();
+    } catch (const std::future_error&) {
+        return {StatusCode::UNAVAILABLE, "channel stopped"};
     }
-
-    StartIoThread();
-    StartReader();
-    connected.store(true, std::memory_order_release);
-    return {};
 }
 
-void Channel::Impl::StartIoThread() {
+void Channel::Impl::EnsureIoThread() {
+    std::lock_guard<std::mutex> lock(connect_mu);
+    if (io_thread_started) return;
+    if (stopped.load(std::memory_order_acquire)) return;
     io_thread = std::thread([this]() {
         try {
             io_context.run();
         } catch (...) {
         }
     });
+    io_thread_started = true;
+}
+
+void Channel::Impl::RequestConnect(ConnectCallback cb) {
+    if (stopped.load(std::memory_order_acquire)) {
+        if (cb) cb({StatusCode::UNAVAILABLE, "channel stopped"});
+        return;
+    }
+
+    EnsureIoThread();
+
+    {
+        std::lock_guard<std::mutex> lock(connect_mu);
+        if (!io_thread_started) {
+            if (cb) cb({StatusCode::UNAVAILABLE, "channel stopped"});
+            return;
+        }
+    }
+
+    boost::asio::post(strand, [this, cb = std::move(cb)]() mutable {
+        if (conn_state == ConnState::Closed ||
+            stopped.load(std::memory_order_acquire)) {
+            if (cb) cb({StatusCode::UNAVAILABLE, "channel stopped"});
+            return;
+        }
+        if (conn_state == ConnState::Connected) {
+            if (cb) cb({});
+            return;
+        }
+        if (cb) connect_waiters.push_back(std::move(cb));
+        if (conn_state == ConnState::Idle) {
+            conn_state = ConnState::Connecting;
+            boost::asio::co_spawn(strand, ConnectCoro(), boost::asio::detached);
+        }
+    });
+}
+
+boost::asio::awaitable<void> Channel::Impl::ConnectCoro() {
+    using boost::asio::use_awaitable;
+    namespace ip = boost::asio::ip;
+
+    ip::tcp::resolver resolver(io_context);
+
+    try {
+        auto endpoints = co_await resolver.async_resolve(
+            host, std::to_string(port), use_awaitable);
+
+        co_await boost::asio::async_connect(socket, endpoints, use_awaitable);
+
+        boost::system::error_code ec;
+        socket.set_option(ip::tcp::no_delay(true), ec);
+
+        if (!config.handshake_header.empty()) {
+            Status hs = co_await AsyncTransport::WriteHandshake(
+                socket, config.handshake_header);
+            if (!hs.ok()) { finish(hs); co_return; }
+
+            hs = co_await AsyncTransport::ReadHandshake(
+                socket, config.handshake_header);
+            if (!hs.ok()) { finish(hs); co_return; }
+        }
+    } catch (const boost::system::system_error& e) {
+        finish({StatusCode::UNAVAILABLE,
+                std::string("connect: ") + e.code().message()});
+        co_return;
+    }
+
+    if (conn_state == ConnState::Closed ||
+        stopped.load(std::memory_order_acquire)) {
+        finish({StatusCode::CANCELLED, "channel shutdown"});
+        co_return;
+    }
+
+    conn_state = ConnState::Connected;
+    StartReader();
+    connected.store(true, std::memory_order_release);
+    finish({});
+}
+
+void Channel::Impl::finish(Status st) {
+    if (!st.ok() && conn_state != ConnState::Closed) {
+        conn_state = ConnState::Idle;
+    }
+    auto waiters = std::move(connect_waiters);
+    connect_waiters.clear();
+    for (auto& cb : waiters) {
+        if (cb) cb(st);
+    }
 }
 
 void Channel::Impl::StartReader() {
@@ -175,16 +259,30 @@ void Channel::Impl::FailAllPending(Status st) {
 void Channel::Impl::Shutdown() {
     if (stopped.exchange(true)) return;
 
-    if (io_thread.joinable()) {
+    bool started;
+    {
+        std::lock_guard<std::mutex> lock(connect_mu);
+        started = io_thread_started;
+    }
+
+    if (started) {
         boost::asio::post(strand, [this]() {
+            conn_state = ConnState::Closed;
             boost::system::error_code ec;
             socket.close(ec);
             FailAllPending({StatusCode::CANCELLED, "channel shutdown"});
+            auto waiters = std::move(connect_waiters);
+            connect_waiters.clear();
+            for (auto& cb : waiters) {
+                if (cb) cb({StatusCode::CANCELLED, "channel shutdown"});
+            }
         });
         work_guard.reset();
         io_thread.join();
     } else {
+        conn_state = ConnState::Closed;
         FailAllPending({StatusCode::CANCELLED, "channel shutdown"});
+        connect_waiters.clear();
     }
 }
 
@@ -197,6 +295,10 @@ Channel::Channel(std::string host, uint16_t port, ChannelConfig config)
 
 Channel::~Channel() {
     impl_->Shutdown();
+}
+
+void Channel::Connect(ConnectCallback cb) {
+    impl_->RequestConnect(std::move(cb));
 }
 
 void Channel::AsyncUnaryCall(uint32_t method_id, std::string request,
@@ -260,4 +362,4 @@ std::shared_ptr<Channel> CreateChannel(std::string host, uint16_t port,
     return std::make_shared<Channel>(std::move(host), port, std::move(config));
 }
 
-}  // namespace protocomm
+}

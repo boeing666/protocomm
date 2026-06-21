@@ -205,6 +205,12 @@ func (c *Channel) UnaryCall(methodID uint32, request []byte) ([]byte, Status) {
 	return r.payload, r.st
 }
 
+func (c *Channel) Connect(cb func(Status)) {
+	go func() {
+		cb(c.ensureConnected())
+	}()
+}
+
 func (c *Channel) teardown(gen uint64, st Status) {
 	c.mu.Lock()
 	if gen != c.gen {

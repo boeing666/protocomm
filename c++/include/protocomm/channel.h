@@ -18,6 +18,7 @@ struct ChannelConfig {
 };
 
 using ResponseCallback = std::function<void(Status, std::string)>;
+using ConnectCallback = std::function<void(Status)>;
 
 class Channel {
 public:
@@ -37,6 +38,8 @@ public:
     void AsyncUnaryCall(uint32_t method_id, std::string request,
                         ResponseCallback callback);
 
+    void Connect(ConnectCallback cb);
+
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
@@ -45,4 +48,4 @@ private:
 std::shared_ptr<Channel> CreateChannel(std::string host, uint16_t port,
                                        ChannelConfig config = {});
 
-}  // namespace protocomm
+}
