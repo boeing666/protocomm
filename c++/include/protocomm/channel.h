@@ -38,7 +38,8 @@ public:
     void AsyncUnaryCall(uint32_t method_id, std::string request,
                         ResponseCallback callback);
 
-    void Connect(ConnectCallback cb);
+    Status Connect();
+    void ConnectAsync(ConnectCallback cb);
 
 private:
     struct Impl;

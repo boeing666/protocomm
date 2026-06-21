@@ -297,7 +297,11 @@ Channel::~Channel() {
     impl_->Shutdown();
 }
 
-void Channel::Connect(ConnectCallback cb) {
+Status Channel::Connect() {
+    return impl_->EnsureConnected();
+}
+
+void Channel::ConnectAsync(ConnectCallback cb) {
     impl_->RequestConnect(std::move(cb));
 }
 
