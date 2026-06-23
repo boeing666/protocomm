@@ -1,5 +1,6 @@
 #include "protocomm/channel.h"
 #include "frame.h"
+#include "mpsc_queue.h"
 #include "transport.h"
 
 #include <atomic>
@@ -22,6 +23,15 @@
 #include <boost/asio/use_awaitable.hpp>
 
 namespace protocomm {
+
+struct Completion {
+    std::atomic<Completion*> mpsc_next{nullptr};
+    enum class Kind { Response, Deferred } kind = Kind::Deferred;
+    ResponseCallback resp_cb;
+    Status status;
+    std::string payload;
+    std::function<void()> thunk;
+};
 
 struct Channel::Impl {
     std::string host;
@@ -48,6 +58,8 @@ struct Channel::Impl {
     ConnState conn_state = ConnState::Idle;
     std::vector<ConnectCallback> connect_waiters;
 
+    detail::MpscQueue<Completion> cb_queue;
+
     Impl()
         : work_guard(boost::asio::make_work_guard(io_context)),
           socket(io_context),
@@ -61,9 +73,36 @@ struct Channel::Impl {
     void StartReader();
     boost::asio::awaitable<void> WritePump();
     boost::asio::awaitable<void> ReadLoop();
-    void FailAllPending(Status st);
+    void FailAllPending(Status st, bool defer);
+    void post_response(ResponseCallback cb, Status st, std::string payload);
+    void post_deferred(std::function<void()> fn);
     void Shutdown();
 };
+
+void Channel::Impl::post_response(ResponseCallback cb, Status st, std::string payload) {
+    if (!cb) return;
+    if (config.dispatch == Dispatch::Inline) {
+        cb(std::move(st), std::move(payload));
+        return;
+    }
+    auto* c = new Completion();
+    c->kind = Completion::Kind::Response;
+    c->resp_cb = std::move(cb);
+    c->status = std::move(st);
+    c->payload = std::move(payload);
+    cb_queue.push(c);
+}
+
+void Channel::Impl::post_deferred(std::function<void()> fn) {
+    if (config.dispatch == Dispatch::Inline) {
+        fn();
+        return;
+    }
+    auto* c = new Completion();
+    c->kind = Completion::Kind::Deferred;
+    c->thunk = std::move(fn);
+    cb_queue.push(c);
+}
 
 Status Channel::Impl::EnsureConnected() {
     if (connected.load(std::memory_order_acquire)) return {};
@@ -184,7 +223,7 @@ void Channel::Impl::finish(Status st) {
     auto waiters = std::move(connect_waiters);
     connect_waiters.clear();
     for (auto& cb : waiters) {
-        if (cb) cb(st);
+        if (cb) post_deferred([cb = std::move(cb), st]() mutable { cb(st); });
     }
 }
 
@@ -198,19 +237,21 @@ boost::asio::awaitable<void> Channel::Impl::ReadLoop() {
         std::string payload;
         Status rs = co_await AsyncTransport::ReadFrame(socket, hdr, payload);
         if (!rs.ok()) {
-            FailAllPending(rs);
+            FailAllPending(rs, /*defer*/ true);
             co_return;
         }
 
         if (hdr.type == FrameType::kPush) {
             if (config.on_push) {
-                config.on_push(hdr.method_id, payload);
+                post_deferred([this, mid = hdr.method_id, payload = std::move(payload)]() {
+                    config.on_push(mid, payload);
+                });
             }
             continue;
         }
 
         if (hdr.type != FrameType::kResponse) {
-            FailAllPending({StatusCode::INTERNAL, "unexpected frame type"});
+            FailAllPending({StatusCode::INTERNAL, "unexpected frame type"}, /*defer*/ true);
             co_return;
         }
 
@@ -226,9 +267,9 @@ boost::asio::awaitable<void> Channel::Impl::ReadLoop() {
 
         auto code = static_cast<StatusCode>(hdr.status_code);
         if (code != StatusCode::OK) {
-            cb(Status{code, "remote error"}, {});
+            post_response(std::move(cb), Status{code, "remote error"}, {});
         } else {
-            cb(Status{}, std::move(payload));
+            post_response(std::move(cb), Status{}, std::move(payload));
         }
     }
 }
@@ -241,18 +282,23 @@ boost::asio::awaitable<void> Channel::Impl::WritePump() {
         Status ws = co_await AsyncTransport::WriteFrame(socket, hdr, payload);
         if (!ws.ok()) {
             write_queue.clear();
-            FailAllPending(ws);
+            FailAllPending(ws, /*defer*/ true);
             break;
         }
     }
     write_pump_active = false;
 }
 
-void Channel::Impl::FailAllPending(Status st) {
+void Channel::Impl::FailAllPending(Status st, bool defer) {
     auto snapshot = std::move(pending);
     pending.clear();
     for (auto& [call_id, cb] : snapshot) {
-        if (cb) cb(st, {});
+        if (!cb) continue;
+        if (defer) {
+            post_response(std::move(cb), st, {});
+        } else {
+            cb(st, {});
+        }
     }
 }
 
@@ -270,7 +316,7 @@ void Channel::Impl::Shutdown() {
             conn_state = ConnState::Closed;
             boost::system::error_code ec;
             socket.close(ec);
-            FailAllPending({StatusCode::CANCELLED, "channel shutdown"});
+            FailAllPending({StatusCode::CANCELLED, "channel shutdown"}, /*defer*/ false);
             auto waiters = std::move(connect_waiters);
             connect_waiters.clear();
             for (auto& cb : waiters) {
@@ -281,8 +327,14 @@ void Channel::Impl::Shutdown() {
         io_thread.join();
     } else {
         conn_state = ConnState::Closed;
-        FailAllPending({StatusCode::CANCELLED, "channel shutdown"});
+        FailAllPending({StatusCode::CANCELLED, "channel shutdown"}, /*defer*/ false);
         connect_waiters.clear();
+    }
+
+    // Free any Manual-dispatch completions queued but never drained — the channel is going
+    // away and there is no consumer. The io thread is joined / never ran, so no producers race.
+    while (Completion* c = cb_queue.pop()) {
+        delete c;
     }
 }
 
@@ -309,7 +361,7 @@ void Channel::AsyncUnaryCall(uint32_t method_id, std::string request,
                               ResponseCallback callback) {
     Status cs = impl_->EnsureConnected();
     if (!cs.ok()) {
-        if (callback) callback(cs, {});
+        impl_->post_response(std::move(callback), std::move(cs), {});
         return;
     }
 
@@ -317,8 +369,8 @@ void Channel::AsyncUnaryCall(uint32_t method_id, std::string request,
         [impl = impl_.get(), method_id, request = std::move(request),
          callback = std::move(callback)]() mutable {
             if (impl->stopped.load(std::memory_order_acquire)) {
-                if (callback)
-                    callback({StatusCode::CANCELLED, "channel shutdown"}, {});
+                impl->post_response(std::move(callback),
+                                    {StatusCode::CANCELLED, "channel shutdown"}, {});
                 return;
             }
 
@@ -359,6 +411,24 @@ Status Channel::UnaryCall(uint32_t method_id,
     if (!st.ok()) return st;
     *response = std::move(bytes);
     return {};
+}
+
+std::size_t Channel::RunCallbacks(std::size_t max) {
+    std::size_t ran = 0;
+    while (ran < max) {
+        Completion* c = impl_->cb_queue.pop();
+        if (c == nullptr) {
+            break;
+        }
+        if (c->kind == Completion::Kind::Response) {
+            if (c->resp_cb) c->resp_cb(std::move(c->status), std::move(c->payload));
+        } else if (c->thunk) {
+            c->thunk();
+        }
+        delete c;
+        ++ran;
+    }
+    return ran;
 }
 
 std::shared_ptr<Channel> CreateChannel(std::string host, uint16_t port,

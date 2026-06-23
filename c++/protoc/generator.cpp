@@ -57,7 +57,7 @@ void EmitStubClass(std::string& code, const ServiceContext& ctx) {
 
     code += "    class Stub {\n";
     code += "    public:\n";
-    code += "        explicit Stub(std::shared_ptr<::protocomm::Channel> channel)\n";
+    code += "        explicit Stub(std::shared_ptr<::protocomm::ChannelInterface> channel)\n";
     code += "            : channel_(std::move(channel)) {}\n\n";
 
     for (const auto& m : ctx.svc.method()) {
@@ -112,7 +112,7 @@ void EmitStubClass(std::string& code, const ServiceContext& ctx) {
     }
 
     code += "    private:\n";
-    code += "        std::shared_ptr<::protocomm::Channel> channel_;\n";
+    code += "        std::shared_ptr<::protocomm::ChannelInterface> channel_;\n";
     code += "    };\n\n";
 }
 
