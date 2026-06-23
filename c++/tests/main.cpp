@@ -371,6 +371,51 @@ bool test_handshake_mismatch(uint16_t port) {
     return true;
 }
 
+bool test_interceptor_trace() {
+    const uint16_t iport = 51299;
+    CalculatorServiceImpl calc;
+
+    std::mutex m;
+    std::string cap_name, cap_req, cap_resp;
+    bool cap_ok = false;
+
+    protocomm::ServerBuilder builder;
+    builder.AddListeningPort("127.0.0.1", iport)
+           .SetHandshakeHeader("pc1")
+           .RegisterService(&calc)
+           .SetInterceptor([&](protocomm::ServerContext* ctx,
+                               protocomm::StatusCode code,
+                               const std::string&, const std::string&,
+                               std::chrono::steady_clock::duration) {
+               std::lock_guard lock(m);
+               cap_name = ctx->method_name();
+               cap_req = ctx->request_text();
+               cap_resp = ctx->response_text();
+               cap_ok = (code == protocomm::StatusCode::OK);
+           });
+    auto server = builder.BuildAndStart();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    auto ch = make_channel(iport);
+    math::Calculator::Stub stub(ch);
+    math::CalcRequest req;
+    req.set_a(2.0);
+    req.set_b(3.0);
+    auto result = stub.AsyncAdd(req).get();
+    TEST_ASSERT(result.first.ok(), "interceptor: call ok");
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    std::lock_guard lock(m);
+    TEST_ASSERT(cap_ok, "interceptor: status OK");
+    TEST_ASSERT(cap_name == "Calculator.Add", "interceptor: method name");
+    TEST_ASSERT(cap_req.find("a: 2") != std::string::npos,
+                "interceptor: request decoded");
+    TEST_ASSERT(cap_resp.find("result: 5") != std::string::npos,
+                "interceptor: response decoded");
+    server->Shutdown();
+    return true;
+}
+
 int main() {
     const uint16_t port = 51234;
 
@@ -414,6 +459,9 @@ int main() {
     std::cout << "=== Cross-service Tests ===\n";
     ok = test_multiple_services_same_server(port) && ok;
     ok = test_handshake_mismatch(port) && ok;
+
+    std::cout << "=== Interceptor / Trace Tests ===\n";
+    ok = test_interceptor_trace() && ok;
 
     std::cout << "\n" << pass_count << "/" << test_count << " tests passed\n";
     server->Shutdown();

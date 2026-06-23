@@ -7,6 +7,12 @@
 
 #include "protocomm/status.h"
 
+namespace google {
+namespace protobuf {
+class Message;
+}
+}
+
 namespace protocomm {
 
 inline Status SerializeProto(const google::protobuf::MessageLite& msg,
@@ -27,5 +33,7 @@ inline Status ParseProto(std::string_view data,
     }
     return {};
 }
+
+std::string RenderProto(const google::protobuf::Message& msg);
 
 }  // namespace protocomm

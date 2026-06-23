@@ -34,6 +34,7 @@ struct Server::Impl {
     Server::OnConnectCallback on_connect;
     Server::OnDisconnectCallback on_disconnect;
     Server::OnHandshakeCallback on_handshake;
+    Server::Interceptor interceptor;
 
     std::mutex sessions_mu;
     std::unordered_map<uint64_t, std::shared_ptr<Session>> sessions;
@@ -62,7 +63,7 @@ struct Server::Impl {
 
                 auto session = std::make_shared<Session>(
                     std::move(socket), handlers, handshake_header,
-                    conn_id, on_connect, on_disconnect, on_handshake);
+                    conn_id, on_connect, on_disconnect, on_handshake, interceptor);
 
                 {
                     std::lock_guard lock(sessions_mu);

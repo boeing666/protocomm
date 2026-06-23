@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 #include <deque>
 #include <functional>
@@ -30,6 +31,9 @@ public:
     using OnConnectCb = std::function<void(const std::shared_ptr<Peer>&)>;
     using OnDisconnectCb = std::function<void(const std::shared_ptr<Peer>&)>;
     using OnHandshakeCb = std::function<bool(const std::shared_ptr<Peer>&, const std::string&)>;
+    using InterceptorCb =
+        std::function<void(ServerContext*, StatusCode, const std::string&,
+                           const std::string&, std::chrono::steady_clock::duration)>;
 
     Session(boost::asio::ip::tcp::socket socket,
             const HandlerMap& handlers,
@@ -37,7 +41,8 @@ public:
             uint64_t connection_id,
             OnConnectCb on_connect,
             OnDisconnectCb on_disconnect,
-            OnHandshakeCb on_handshake);
+            OnHandshakeCb on_handshake,
+            InterceptorCb interceptor);
 
     boost::asio::awaitable<void> Run();
 
@@ -60,6 +65,7 @@ private:
     OnConnectCb on_connect_;
     OnDisconnectCb on_disconnect_;
     OnHandshakeCb on_handshake_;
+    InterceptorCb interceptor_;
 
     std::deque<std::pair<FrameHeader, std::string>> write_queue_;
     bool write_pump_active_ = false;

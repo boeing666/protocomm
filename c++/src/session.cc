@@ -14,7 +14,8 @@ Session::Session(boost::asio::ip::tcp::socket socket,
                  uint64_t connection_id,
                  OnConnectCb on_connect,
                  OnDisconnectCb on_disconnect,
-                 OnHandshakeCb on_handshake)
+                 OnHandshakeCb on_handshake,
+                 InterceptorCb interceptor)
     : socket_(std::move(socket)),
       strand_(boost::asio::make_strand(socket_.get_executor())),
       handlers_(handlers),
@@ -22,7 +23,8 @@ Session::Session(boost::asio::ip::tcp::socket socket,
       connection_id_(connection_id),
       on_connect_(std::move(on_connect)),
       on_disconnect_(std::move(on_disconnect)),
-      on_handshake_(std::move(on_handshake)) {
+      on_handshake_(std::move(on_handshake)),
+      interceptor_(std::move(interceptor)) {
     boost::system::error_code ec;
     auto ep = socket_.remote_endpoint(ec);
     if (!ec) {
@@ -112,10 +114,12 @@ boost::asio::awaitable<void> Session::Run() {
         ctx.peer_address_ = peer_address_;
         ctx.method_id_ = req_hdr.method_id;
         ctx.call_id_ = req_hdr.call_id;
+        ctx.trace_ = static_cast<bool>(interceptor_);
 
         std::string resp_payload;
         StatusCode resp_code = StatusCode::OK;
 
+        const auto started_at = std::chrono::steady_clock::now();
         auto it = handlers_.find(req_hdr.method_id);
         if (it == handlers_.end()) {
             resp_code = StatusCode::UNIMPLEMENTED;
@@ -125,6 +129,12 @@ boost::asio::awaitable<void> Session::Run() {
                 resp_code = handler_status.error_code();
                 resp_payload.clear();
             }
+        }
+
+        // Trace after the handler, before resp_payload is moved into the write queue.
+        if (interceptor_) {
+            interceptor_(&ctx, resp_code, req_payload, resp_payload,
+                         std::chrono::steady_clock::now() - started_at);
         }
 
         FrameHeader resp_hdr;

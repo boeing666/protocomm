@@ -22,6 +22,7 @@ public:
     ServerBuilder& SetOnConnect(Server::OnConnectCallback cb);
     ServerBuilder& SetOnDisconnect(Server::OnDisconnectCallback cb);
     ServerBuilder& SetOnHandshake(Server::OnHandshakeCallback cb);
+    ServerBuilder& SetInterceptor(Server::Interceptor cb);
 
     std::unique_ptr<Server> BuildAndStart();
 

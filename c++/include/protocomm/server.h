@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -30,9 +31,15 @@ public:
     using OnHandshakeCallback = std::function<bool(const std::shared_ptr<Peer>&,
                                                     const std::string& header)>;
 
+    using Interceptor =
+        std::function<void(ServerContext* ctx, StatusCode code,
+                           const std::string& request, const std::string& response,
+                           std::chrono::steady_clock::duration latency)>;
+
     void SetOnConnect(OnConnectCallback cb) const;
     void SetOnDisconnect(OnDisconnectCallback cb) const;
     void SetOnHandshake(OnHandshakeCallback cb) const;
+    void SetInterceptor(Interceptor cb) const;
 
     std::vector<std::shared_ptr<Peer>> GetConnections() const;
     void Broadcast(uint32_t method_id, const std::string& payload) const;

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type Interceptor func(ctx *ServerContext, code StatusCode, reqLen, respLen int, dur time.Duration)
+type Interceptor func(ctx *ServerContext, code StatusCode, req, resp []byte, dur time.Duration)
 
 type Peer struct {
 	id      uint64
@@ -193,6 +193,7 @@ func (s *Server) serveRequest(peer *Peer, hdr FrameHeader, payload []byte) {
 		PeerAddress: peer.addr,
 		MethodID:    hdr.MethodID,
 		CallID:      hdr.CallID,
+		Trace:       s.interceptor != nil,
 	}
 
 	var respPayload []byte
@@ -215,7 +216,7 @@ func (s *Server) serveRequest(peer *Peer, hdr FrameHeader, payload []byte) {
 	}
 
 	if s.interceptor != nil {
-		s.interceptor(ctx, respCode, len(payload), len(respPayload), time.Since(start))
+		s.interceptor(ctx, respCode, payload, respPayload, time.Since(start))
 	}
 
 	respHdr := FrameHeader{

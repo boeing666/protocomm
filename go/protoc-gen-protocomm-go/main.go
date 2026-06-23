@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	"google.golang.org/protobuf/compiler/protogen"
 )
@@ -53,6 +54,10 @@ func protoIdent(name string) protogen.GoIdent {
 	return protogen.GoIdent{GoName: name, GoImportPath: "google.golang.org/protobuf/proto"}
 }
 
+func prototraceIdent(name string) protogen.GoIdent {
+	return protogen.GoIdent{GoName: name, GoImportPath: "github.com/boeing666/protocomm/go/prototrace"}
+}
+
 func fnv1a32(s string) uint32 {
 	h := uint32(0x811c9dc5)
 	for i := 0; i < len(s); i++ {
@@ -102,7 +107,7 @@ func genService(g *protogen.GeneratedFile, file *protogen.File, svc *protogen.Se
 	genClient(g, svc, goSvc)
 	genServerInterface(g, svc, goSvc)
 	genUnimplementedServer(g, svc, goSvc)
-	genRegister(g, svc, goSvc)
+	genRegister(g, svc, goSvc, protoSvc)
 	genServiceWrapper(g, svc, goSvc)
 }
 
@@ -177,7 +182,7 @@ func genUnimplementedServer(g *protogen.GeneratedFile, svc *protogen.Service, go
 	}
 }
 
-func genRegister(g *protogen.GeneratedFile, svc *protogen.Service, goSvc string) {
+func genRegister(g *protogen.GeneratedFile, svc *protogen.Service, goSvc, protoSvc string) {
 	server := goSvc + "Server"
 
 	g.P("// Register", server, " registers a ", server, " with the protocomm server.")
@@ -186,17 +191,25 @@ func genRegister(g *protogen.GeneratedFile, svc *protogen.Service, goSvc string)
 	for _, m := range svc.Methods {
 		mid := goSvc + "_" + m.GoName + "_MethodID"
 		in := m.Input.GoIdent
+		full := protoSvc + "." + string(m.Desc.Name())
 
 		g.P("\tsrv.RegisterMethod(", mid,
 			", func(ctx *", pcIdent("ServerContext"), ", data []byte) ([]byte, ", pcIdent("Status"), ") {")
+		g.P("\t\tctx.MethodName = ", strconv.Quote(full))
 		g.P("\t\treq := new(", in, ")")
 		g.P("\t\tif err := ", protoIdent("Unmarshal"), "(data, req); err != nil {")
 		g.P("\t\t\treturn nil, ", pcIdent("Status"),
 			"{Code: ", pcIdent("Internal"), ", Message: \"unmarshal: \" + err.Error()}")
 		g.P("\t\t}")
+		g.P("\t\tif ctx.Trace {")
+		g.P("\t\t\tctx.RequestText = ", prototraceIdent("Render"), "(req)")
+		g.P("\t\t}")
 		g.P("\t\tresp, st := impl.", m.GoName, "(ctx, req)")
 		g.P("\t\tif !st.IsOK() {")
 		g.P("\t\t\treturn nil, st")
+		g.P("\t\t}")
+		g.P("\t\tif ctx.Trace {")
+		g.P("\t\t\tctx.ResponseText = ", prototraceIdent("Render"), "(resp)")
 		g.P("\t\t}")
 		g.P("\t\tout, err := ", protoIdent("Marshal"), "(resp)")
 		g.P("\t\tif err != nil {")

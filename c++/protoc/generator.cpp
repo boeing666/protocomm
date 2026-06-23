@@ -188,16 +188,22 @@ void EmitServiceClass(std::string& code, const ServiceContext& ctx) {
         std::string in = InputTypeCpp(m);
         std::string out = OutputTypeCpp(m);
         std::string mid = "k" + m.name() + "MethodId";
+        std::string full = svc + "." + m.name();
         code += "            server->RegisterMethod(" + mid + ",\n";
         code += "                [this](::protocomm::ServerContext* ctx,\n";
         code += "                       const std::string& req_bytes,\n";
         code += "                       std::string* resp_bytes) -> ::protocomm::Status {\n";
+        code += "                    ctx->set_method_name(\"" + full + "\");\n";
         code += "                    " + in + " req;\n";
         code += "                    ::protocomm::Status ps = ::protocomm::ParseProto(req_bytes, req);\n";
         code += "                    if (!ps.ok()) return ps;\n";
+        code += "                    if (ctx->tracing())\n";
+        code += "                        ctx->set_request_text(::protocomm::RenderProto(req));\n";
         code += "                    " + out + " resp;\n";
         code += "                    ::protocomm::Status s = this->" + m.name() + "(ctx, &req, &resp);\n";
         code += "                    if (!s.ok()) return s;\n";
+        code += "                    if (ctx->tracing())\n";
+        code += "                        ctx->set_response_text(::protocomm::RenderProto(resp));\n";
         code += "                    return ::protocomm::SerializeProto(resp, *resp_bytes);\n";
         code += "                });\n";
     }
@@ -206,7 +212,7 @@ void EmitServiceClass(std::string& code, const ServiceContext& ctx) {
 }
 
 void EmitFooter(std::string& code, const ServiceContext& ctx) {
-    code += "};\n\n";
+    code += "};\n\n";              // close the service class
     if (ctx.has_ns) {
         code += "}  // namespace " + ctx.ns + "\n";
     }

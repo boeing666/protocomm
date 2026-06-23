@@ -14,6 +14,7 @@ struct ServerBuilder::Config {
     Server::OnConnectCallback on_connect;
     Server::OnDisconnectCallback on_disconnect;
     Server::OnHandshakeCallback on_handshake;
+    Server::Interceptor interceptor;
 };
 
 ServerBuilder::ServerBuilder() : config_(std::make_unique<Config>()) {}
@@ -56,6 +57,11 @@ ServerBuilder& ServerBuilder::SetOnHandshake(Server::OnHandshakeCallback cb) {
     return *this;
 }
 
+ServerBuilder& ServerBuilder::SetInterceptor(Server::Interceptor cb) {
+    config_->interceptor = std::move(cb);
+    return *this;
+}
+
 std::unique_ptr<Server> ServerBuilder::BuildAndStart() {
     auto server = std::unique_ptr<Server>(new Server());
 
@@ -67,6 +73,7 @@ std::unique_ptr<Server> ServerBuilder::BuildAndStart() {
     if (config_->on_connect) server->SetOnConnect(std::move(config_->on_connect));
     if (config_->on_disconnect) server->SetOnDisconnect(std::move(config_->on_disconnect));
     if (config_->on_handshake) server->SetOnHandshake(std::move(config_->on_handshake));
+    if (config_->interceptor) server->SetInterceptor(std::move(config_->interceptor));
 
     for (auto* svc : config_->services) {
         svc->RegisterWith(server.get());

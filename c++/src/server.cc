@@ -22,6 +22,10 @@ void Server::SetOnHandshake(OnHandshakeCallback cb) const {
     impl_->on_handshake = std::move(cb);
 }
 
+void Server::SetInterceptor(Interceptor cb) const {
+    impl_->interceptor = std::move(cb);
+}
+
 std::vector<std::shared_ptr<Peer>> Server::GetConnections() const {
     std::lock_guard lock(impl_->sessions_mu);
     std::vector<std::shared_ptr<Peer>> result;
