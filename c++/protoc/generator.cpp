@@ -65,6 +65,7 @@ void EmitStubClass(std::string& code, const ServiceContext& ctx) {
         std::string out = OutputTypeCpp(m);
         std::string method = m.name();
         std::string mid = "k" + method + "MethodId";
+        std::string full = ctx.svc_name + "." + method;
 
         code += "        ::protocomm::Status " + method + "(\n";
         code += "                const " + in + "& request,\n";
@@ -72,9 +73,17 @@ void EmitStubClass(std::string& code, const ServiceContext& ctx) {
         code += "            std::string req_bytes, resp_bytes;\n";
         code += "            ::protocomm::Status s = ::protocomm::SerializeProto(request, req_bytes);\n";
         code += "            if (!s.ok()) return s;\n";
+        code += "            const bool trace = channel_->Tracing();\n";
         code += "            s = channel_->UnaryCall(" + mid + ", req_bytes, &resp_bytes);\n";
-        code += "            if (!s.ok()) return s;\n";
-        code += "            return ::protocomm::ParseProto(resp_bytes, *response);\n";
+        code += "            if (!s.ok()) {\n";
+        code += "                if (trace) channel_->OnTrace(\"" + full + "\", ::protocomm::RenderProto(request), {}, s);\n";
+        code += "                return s;\n";
+        code += "            }\n";
+        code += "            ::protocomm::Status ps = ::protocomm::ParseProto(resp_bytes, *response);\n";
+        code += "            if (trace)\n";
+        code += "                channel_->OnTrace(\"" + full + "\", ::protocomm::RenderProto(request),\n";
+        code += "                                  ps.ok() ? ::protocomm::RenderProto(*response) : std::string{}, ps);\n";
+        code += "            return ps;\n";
         code += "        }\n\n";
 
         code += "        ::protocomm::AsyncUnaryCall<" + out + "> Async" + method + "(\n";
@@ -99,12 +108,23 @@ void EmitStubClass(std::string& code, const ServiceContext& ctx) {
         code += "                if (on_response) on_response(ser, " + out + "{});\n";
         code += "                return;\n";
         code += "            }\n";
-        code += "            channel_->AsyncUnaryCall(" + mid + ", std::move(req_bytes),\n";
-        code += "                [cb = std::move(on_response)](::protocomm::Status st, std::string bytes) {\n";
+        // Capture the channel (shared_ptr) — the Stub is often a temporary that dies before
+        // the async reply arrives, so the callback must keep the channel, not `this`.
+        code += "            auto ch = channel_;\n";
+        code += "            const bool trace = ch->Tracing();\n";
+        code += "            std::string req_text = trace ? ::protocomm::RenderProto(request) : std::string{};\n";
+        code += "            ch->AsyncUnaryCall(" + mid + ", std::move(req_bytes),\n";
+        code += "                [ch, cb = std::move(on_response), trace, req_text = std::move(req_text)]\n";
+        code += "                (::protocomm::Status st, std::string bytes) {\n";
+        code += "                    " + out + " resp;\n";
+        code += "                    ::protocomm::Status ps = st;\n";
+        code += "                    if (st.ok()) ps = ::protocomm::ParseProto(bytes, resp);\n";
+        code += "                    if (trace)\n";
+        code += "                        ch->OnTrace(\"" + full + "\", req_text,\n";
+        code += "                                    (st.ok() && ps.ok()) ? ::protocomm::RenderProto(resp) : std::string{},\n";
+        code += "                                    ps.ok() ? st : ps);\n";
         code += "                    if (!cb) return;\n";
         code += "                    if (!st.ok()) { cb(st, " + out + "{}); return; }\n";
-        code += "                    " + out + " resp;\n";
-        code += "                    ::protocomm::Status ps = ::protocomm::ParseProto(bytes, resp);\n";
         code += "                    if (!ps.ok()) { cb(ps, " + out + "{}); return; }\n";
         code += "                    cb(::protocomm::Status{}, std::move(resp));\n";
         code += "                });\n";

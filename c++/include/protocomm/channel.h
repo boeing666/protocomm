@@ -30,6 +30,10 @@ struct ChannelConfig {
 
 using ResponseCallback = std::function<void(Status, std::string)>;
 using ConnectCallback = std::function<void(Status)>;
+using ClientInterceptor = std::function<void(const char* method,
+                                             const std::string& request_text,
+                                             const std::string& response_text,
+                                             const Status& status)>;
 
 class ChannelInterface {
 public:
@@ -44,6 +48,10 @@ public:
 
     virtual void AsyncUnaryCall(uint32_t method_id, std::string request,
                                 ResponseCallback callback) = 0;
+
+    virtual bool Tracing() const { return false; }
+    virtual void OnTrace(const char* /*method*/, const std::string& /*request_text*/,
+                         const std::string& /*response_text*/, const Status& /*status*/) {}
 };
 
 class Channel : public ChannelInterface {
@@ -66,6 +74,11 @@ public:
 
     Status Connect();
     void ConnectAsync(ConnectCallback cb);
+
+    void SetInterceptor(ClientInterceptor cb);
+    bool Tracing() const override;
+    void OnTrace(const char* method, const std::string& request_text,
+                 const std::string& response_text, const Status& status) override;
 
     std::size_t RunCallbacks(std::size_t max = static_cast<std::size_t>(-1));
 private:

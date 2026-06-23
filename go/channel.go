@@ -12,15 +12,18 @@ type ChannelConfig struct {
 	OnPush          func(methodID uint32, payload []byte)
 }
 
+type ClientInterceptor func(method, requestText, responseText string, status Status)
+
 type result struct {
 	st      Status
 	payload []byte
 }
 
 type Channel struct {
-	host   string
-	port   uint16
-	config ChannelConfig
+	host        string
+	port        uint16
+	config      ChannelConfig
+	interceptor ClientInterceptor
 
 	connectMu sync.Mutex
 	writeMu   sync.Mutex
@@ -213,6 +216,14 @@ func (c *Channel) ConnectAsync(cb func(Status)) {
 	go func() {
 		cb(c.ensureConnected())
 	}()
+}
+
+func (c *Channel) SetInterceptor(fn ClientInterceptor) { c.interceptor = fn }
+func (c *Channel) Tracing() bool                       { return c.interceptor != nil }
+func (c *Channel) Trace(method, requestText, responseText string, status Status) {
+	if c.interceptor != nil {
+		c.interceptor(method, requestText, responseText, status)
+	}
 }
 
 func (c *Channel) teardown(gen uint64, st Status) {

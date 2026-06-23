@@ -37,6 +37,7 @@ struct Channel::Impl {
     std::string host;
     uint16_t port = 0;
     ChannelConfig config;
+    ClientInterceptor interceptor;
 
     boost::asio::io_context io_context;
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard;
@@ -355,6 +356,21 @@ Status Channel::Connect() {
 
 void Channel::ConnectAsync(ConnectCallback cb) {
     impl_->RequestConnect(std::move(cb));
+}
+
+void Channel::SetInterceptor(ClientInterceptor cb) {
+    impl_->interceptor = std::move(cb);
+}
+
+bool Channel::Tracing() const {
+    return static_cast<bool>(impl_->interceptor);
+}
+
+void Channel::OnTrace(const char* method, const std::string& request_text,
+                      const std::string& response_text, const Status& status) {
+    if (impl_->interceptor) {
+        impl_->interceptor(method, request_text, response_text, status);
+    }
 }
 
 void Channel::AsyncUnaryCall(uint32_t method_id, std::string request,

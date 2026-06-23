@@ -104,14 +104,14 @@ func genService(g *protogen.GeneratedFile, file *protogen.File, svc *protogen.Se
 	g.P(")")
 	g.P()
 
-	genClient(g, svc, goSvc)
+	genClient(g, svc, goSvc, protoSvc)
 	genServerInterface(g, svc, goSvc)
 	genUnimplementedServer(g, svc, goSvc)
 	genRegister(g, svc, goSvc, protoSvc)
 	genServiceWrapper(g, svc, goSvc)
 }
 
-func genClient(g *protogen.GeneratedFile, svc *protogen.Service, goSvc string) {
+func genClient(g *protogen.GeneratedFile, svc *protogen.Service, goSvc, protoSvc string) {
 	client := goSvc + "Client"
 
 	g.P("// ", client, " is the client stub for the ", goSvc, " service.")
@@ -129,6 +129,7 @@ func genClient(g *protogen.GeneratedFile, svc *protogen.Service, goSvc string) {
 		mid := goSvc + "_" + m.GoName + "_MethodID"
 		in := m.Input.GoIdent
 		out := m.Output.GoIdent
+		full := protoSvc + "." + string(m.Desc.Name())
 
 		g.P("func (c *", client, ") ", m.GoName, "(req *", in,
 			") (*", out, ", ", pcIdent("Status"), ") {")
@@ -139,12 +140,18 @@ func genClient(g *protogen.GeneratedFile, svc *protogen.Service, goSvc string) {
 		g.P("\t}")
 		g.P("\trespData, st := c.ch.UnaryCall(", mid, ", data)")
 		g.P("\tif !st.IsOK() {")
+		g.P("\t\tif c.ch.Tracing() {")
+		g.P("\t\t\tc.ch.Trace(", strconv.Quote(full), ", ", prototraceIdent("Render"), "(req), \"\", st)")
+		g.P("\t\t}")
 		g.P("\t\treturn nil, st")
 		g.P("\t}")
 		g.P("\tresp := new(", out, ")")
 		g.P("\tif err := ", protoIdent("Unmarshal"), "(respData, resp); err != nil {")
 		g.P("\t\treturn nil, ", pcIdent("Status"),
 			"{Code: ", pcIdent("Internal"), ", Message: \"unmarshal: \" + err.Error()}")
+		g.P("\t}")
+		g.P("\tif c.ch.Tracing() {")
+		g.P("\t\tc.ch.Trace(", strconv.Quote(full), ", ", prototraceIdent("Render"), "(req), ", prototraceIdent("Render"), "(resp), st)")
 		g.P("\t}")
 		g.P("\treturn resp, ", pcIdent("StatusOK"), "()")
 		g.P("}")
