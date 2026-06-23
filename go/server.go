@@ -6,7 +6,10 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 )
+
+type Interceptor func(ctx *ServerContext, code StatusCode, reqLen, respLen int, dur time.Duration)
 
 type Peer struct {
 	id      uint64
@@ -15,8 +18,8 @@ type Peer struct {
 	writeMu sync.Mutex
 }
 
-func (p *Peer) ID() uint64           { return p.id }
-func (p *Peer) PeerAddress() string   { return p.addr }
+func (p *Peer) ID() uint64          { return p.id }
+func (p *Peer) PeerAddress() string { return p.addr }
 
 func (p *Peer) Send(methodID uint32, payload []byte) error {
 	hdr := FrameHeader{
@@ -45,6 +48,7 @@ type Server struct {
 	onConnect    func(*Peer)
 	onDisconnect func(*Peer)
 	onHandshake  func(*Peer, string) bool
+	interceptor  Interceptor
 
 	sem  chan struct{}
 	done chan struct{}
@@ -194,6 +198,7 @@ func (s *Server) serveRequest(peer *Peer, hdr FrameHeader, payload []byte) {
 	var respPayload []byte
 	var respCode StatusCode
 
+	start := time.Now()
 	s.handlersMu.RLock()
 	handler, ok := s.handlers[hdr.MethodID]
 	s.handlersMu.RUnlock()
@@ -207,6 +212,10 @@ func (s *Server) serveRequest(peer *Peer, hdr FrameHeader, payload []byte) {
 			respCode = st.Code
 			respPayload = nil
 		}
+	}
+
+	if s.interceptor != nil {
+		s.interceptor(ctx, respCode, len(payload), len(respPayload), time.Since(start))
 	}
 
 	respHdr := FrameHeader{
@@ -233,6 +242,7 @@ type ServerBuilder struct {
 	onConnect       func(*Peer)
 	onDisconnect    func(*Peer)
 	onHandshake     func(*Peer, string) bool
+	interceptor     Interceptor
 	maxConcurrent   int
 }
 
@@ -280,6 +290,11 @@ func (b *ServerBuilder) SetMaxConcurrentRequests(n int) *ServerBuilder {
 	return b
 }
 
+func (b *ServerBuilder) SetInterceptor(fn Interceptor) *ServerBuilder {
+	b.interceptor = fn
+	return b
+}
+
 func (b *ServerBuilder) BuildAndStart() (*Server, error) {
 	s := &Server{
 		handlers:        make(map[uint32]MethodHandler),
@@ -288,6 +303,7 @@ func (b *ServerBuilder) BuildAndStart() (*Server, error) {
 		onConnect:       b.onConnect,
 		onDisconnect:    b.onDisconnect,
 		onHandshake:     b.onHandshake,
+		interceptor:     b.interceptor,
 		done:            make(chan struct{}),
 	}
 	s.nextConnID.Store(1)
