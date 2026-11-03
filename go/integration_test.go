@@ -345,8 +345,9 @@ func TestCalculatorDivideByZero(t *testing.T) {
 // =========================================================
 
 func TestChatSendAndHistory(t *testing.T) {
-	ch := makeChannel()
-	defer ch.Close()
+	// Own server: the shared one keeps chat history between runs (-count=N).
+	srv := startServer(t, protocomm.NewServerBuilder().RegisterService(&chatService{}))
+	ch := dial(t, srv)
 
 	for i := 0; i < 3; i++ {
 		msg := testpb.ChatMessage{
