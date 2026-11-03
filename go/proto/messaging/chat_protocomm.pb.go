@@ -5,6 +5,7 @@ package messaging
 
 import (
 	_go "github.com/boeing666/protocomm/go"
+	prototrace "github.com/boeing666/protocomm/go/prototrace"
 	proto "google.golang.org/protobuf/proto"
 )
 
@@ -32,11 +33,17 @@ func (c *ChatClient) SendMessage(req *ChatMessage) (*SendResult, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Chat_SendMessage_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Chat.SendMessage", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(SendResult)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Chat.SendMessage", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -48,11 +55,17 @@ func (c *ChatClient) GetHistory(req *HistoryRequest) (*HistoryResponse, _go.Stat
 	}
 	respData, st := c.ch.UnaryCall(Chat_GetHistory_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Chat.GetHistory", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HistoryResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Chat.GetHistory", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -64,11 +77,17 @@ func (c *ChatClient) Ping(req *PingRequest) (*PongResponse, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Chat_Ping_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Chat.Ping", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(PongResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Chat.Ping", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -98,13 +117,20 @@ func (UnimplementedChatServer) Ping(_ *_go.ServerContext, _ *PingRequest) (*Pong
 // RegisterChatServer registers a ChatServer with the protocomm server.
 func RegisterChatServer(srv *_go.Server, impl ChatServer) {
 	srv.RegisterMethod(Chat_SendMessage_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Chat.SendMessage"
 		req := new(ChatMessage)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SendMessage(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -113,13 +139,20 @@ func RegisterChatServer(srv *_go.Server, impl ChatServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Chat_GetHistory_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Chat.GetHistory"
 		req := new(HistoryRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.GetHistory(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -128,13 +161,20 @@ func RegisterChatServer(srv *_go.Server, impl ChatServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Chat_Ping_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Chat.Ping"
 		req := new(PingRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.Ping(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
