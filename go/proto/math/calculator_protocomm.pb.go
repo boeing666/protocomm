@@ -5,6 +5,7 @@ package math
 
 import (
 	_go "github.com/boeing666/protocomm/go"
+	prototrace "github.com/boeing666/protocomm/go/prototrace"
 	proto "google.golang.org/protobuf/proto"
 )
 
@@ -33,11 +34,17 @@ func (c *CalculatorClient) Add(req *CalcRequest) (*CalcResponse, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Calculator_Add_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Calculator.Add", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(CalcResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Calculator.Add", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -49,11 +56,17 @@ func (c *CalculatorClient) Subtract(req *CalcRequest) (*CalcResponse, _go.Status
 	}
 	respData, st := c.ch.UnaryCall(Calculator_Subtract_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Calculator.Subtract", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(CalcResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Calculator.Subtract", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -65,11 +78,17 @@ func (c *CalculatorClient) Multiply(req *CalcRequest) (*CalcResponse, _go.Status
 	}
 	respData, st := c.ch.UnaryCall(Calculator_Multiply_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Calculator.Multiply", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(CalcResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Calculator.Multiply", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -81,11 +100,17 @@ func (c *CalculatorClient) Divide(req *CalcRequest) (*CalcResponse, _go.Status) 
 	}
 	respData, st := c.ch.UnaryCall(Calculator_Divide_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Calculator.Divide", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(CalcResponse)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Calculator.Divide", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -120,13 +145,20 @@ func (UnimplementedCalculatorServer) Divide(_ *_go.ServerContext, _ *CalcRequest
 // RegisterCalculatorServer registers a CalculatorServer with the protocomm server.
 func RegisterCalculatorServer(srv *_go.Server, impl CalculatorServer) {
 	srv.RegisterMethod(Calculator_Add_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Calculator.Add"
 		req := new(CalcRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.Add(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -135,13 +167,20 @@ func RegisterCalculatorServer(srv *_go.Server, impl CalculatorServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Calculator_Subtract_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Calculator.Subtract"
 		req := new(CalcRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.Subtract(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -150,13 +189,20 @@ func RegisterCalculatorServer(srv *_go.Server, impl CalculatorServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Calculator_Multiply_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Calculator.Multiply"
 		req := new(CalcRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.Multiply(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -165,13 +211,20 @@ func RegisterCalculatorServer(srv *_go.Server, impl CalculatorServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Calculator_Divide_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Calculator.Divide"
 		req := new(CalcRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.Divide(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {

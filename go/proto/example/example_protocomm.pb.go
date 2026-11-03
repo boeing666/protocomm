@@ -5,6 +5,7 @@ package example
 
 import (
 	_go "github.com/boeing666/protocomm/go"
+	prototrace "github.com/boeing666/protocomm/go/prototrace"
 	proto "google.golang.org/protobuf/proto"
 )
 
@@ -38,11 +39,17 @@ func (c *GreeterClient) SayHello(req *HelloRequest) (*HelloReply, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Greeter.SayHello", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Greeter.SayHello", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -54,11 +61,17 @@ func (c *GreeterClient) SayHello1(req *HelloRequest) (*HelloReply, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello1_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Greeter.SayHello1", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Greeter.SayHello1", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -70,11 +83,17 @@ func (c *GreeterClient) SayHello2(req *HelloRequest) (*HelloReply, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello2_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Greeter.SayHello2", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Greeter.SayHello2", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -86,11 +105,17 @@ func (c *GreeterClient) SayHello3(req *HelloRequest) (*HelloReply, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello3_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Greeter.SayHello3", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Greeter.SayHello3", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -102,11 +127,17 @@ func (c *GreeterClient) SayHello4(req *HelloRequest) (*HelloReply, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello4_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Greeter.SayHello4", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Greeter.SayHello4", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -118,11 +149,17 @@ func (c *GreeterClient) SayHello5(req *HelloRequest) (*HelloReply, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello5_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Greeter.SayHello5", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Greeter.SayHello5", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -134,11 +171,17 @@ func (c *GreeterClient) SayHello6(req *HelloRequest) (*HelloReply, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello6_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Greeter.SayHello6", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Greeter.SayHello6", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -150,11 +193,17 @@ func (c *GreeterClient) SayHello7(req *HelloRequest) (*HelloReply, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello7_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Greeter.SayHello7", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Greeter.SayHello7", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -166,11 +215,17 @@ func (c *GreeterClient) SayHello8(req *HelloRequest) (*HelloReply, _go.Status) {
 	}
 	respData, st := c.ch.UnaryCall(Greeter_SayHello8_MethodID, data)
 	if !st.IsOK() {
+		if c.ch.Tracing() {
+			c.ch.Trace("Greeter.SayHello8", prototrace.Render(req), "", st)
+		}
 		return nil, st
 	}
 	resp := new(HelloReply)
 	if err := proto.Unmarshal(respData, resp); err != nil {
 		return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
+	}
+	if c.ch.Tracing() {
+		c.ch.Trace("Greeter.SayHello8", prototrace.Render(req), prototrace.Render(resp), st)
 	}
 	return resp, _go.StatusOK()
 }
@@ -230,13 +285,20 @@ func (UnimplementedGreeterServer) SayHello8(_ *_go.ServerContext, _ *HelloReques
 // RegisterGreeterServer registers a GreeterServer with the protocomm server.
 func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
 	srv.RegisterMethod(Greeter_SayHello_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Greeter.SayHello"
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SayHello(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -245,13 +307,20 @@ func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Greeter_SayHello1_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Greeter.SayHello1"
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SayHello1(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -260,13 +329,20 @@ func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Greeter_SayHello2_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Greeter.SayHello2"
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SayHello2(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -275,13 +351,20 @@ func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Greeter_SayHello3_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Greeter.SayHello3"
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SayHello3(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -290,13 +373,20 @@ func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Greeter_SayHello4_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Greeter.SayHello4"
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SayHello4(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -305,13 +395,20 @@ func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Greeter_SayHello5_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Greeter.SayHello5"
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SayHello5(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -320,13 +417,20 @@ func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Greeter_SayHello6_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Greeter.SayHello6"
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SayHello6(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -335,13 +439,20 @@ func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Greeter_SayHello7_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Greeter.SayHello7"
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SayHello7(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
@@ -350,13 +461,20 @@ func RegisterGreeterServer(srv *_go.Server, impl GreeterServer) {
 		return out, _go.StatusOK()
 	})
 	srv.RegisterMethod(Greeter_SayHello8_MethodID, func(ctx *_go.ServerContext, data []byte) ([]byte, _go.Status) {
+		ctx.MethodName = "Greeter.SayHello8"
 		req := new(HelloRequest)
 		if err := proto.Unmarshal(data, req); err != nil {
 			return nil, _go.Status{Code: _go.Internal, Message: "unmarshal: " + err.Error()}
 		}
+		if ctx.Trace {
+			ctx.RequestText = prototrace.Render(req)
+		}
 		resp, st := impl.SayHello8(ctx, req)
 		if !st.IsOK() {
 			return nil, st
+		}
+		if ctx.Trace {
+			ctx.ResponseText = prototrace.Render(resp)
 		}
 		out, err := proto.Marshal(resp)
 		if err != nil {
